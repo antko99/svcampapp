@@ -957,7 +957,7 @@
           welcome: "Welcome to SV's 2026 family camp.",
           location: "Angels Camp",
           timezone: "America/Los_Angeles",
-          lastSyncedFromSheet: "2026-11-23 ~19:59 (schedule edits; room leaders Winly/Kerry; Sat Dinner Prepare -> Calvin & Mandy & children; Dinner Competition tab added)",
+          lastSyncedFromSheet: "2026-11-23 ~19:59 (schedule edits; room leaders Winly/Kerry; Sat Dinner Prepare -> Calvin & Mandy & children; Cooking Competition tab added)",
           sourceSheet: "Nov 2026 Angels English Camp",
           sourceSheetId: "1PD3QML2nMJ9R26p0Ms3J-a2RauyLZbLt1J96EXllCGA"
         },
@@ -1074,7 +1074,7 @@
             { id:"sat-e-rec",      t:13*60,    title:"Recreation (Outdoor or Indoor Group)", track:"english" },
             { id:"sat-e-race",     t:14*60,    title:"Amazing Race & Fun", track:"english", duty:{ who:"Timothy Ko & Acacia", label:"Leading this" } },
             { id:"sat-e-grouping-pm", t:16*60, title:"Grouping", track:"english" },
-            { id:"sat-e-comp",     t:16*60+30, title:"Dinner Competition / Prep Dinner", track:"english", duty:{ who:"Anthony", label:"Leading this" } },
+            { id:"sat-e-comp",     t:16*60+30, title:"Cooking Competition / Prep Dinner", track:"english", duty:{ who:"Anthony", label:"Leading this" } },
             { id:"sat-e-dinner",   t:17*60+30, title:"Dinner", foodNote:"Ground beef 8 · rice 18 cups · veggies 16 lbs", foodFor:"Anthony", foodGroup:"Adults", track:"english" },
             { id:"sat-e-break",    t:18*60+45, title:"Break", track:"english" },
             { id:"sat-e-family",   t:19*60,    title:"Family Time", track:"english", duty:{ who:"Mandy Chung", label:"Leading this" } },
@@ -1093,7 +1093,7 @@
                schedule at the 2:00 PM Amazing Race & Fun. */
             { id:"sat-p-race",     t:14*60,    title:"Amazing Race & Fun", track:"shared", duty:{ who:"Timothy Ko & Acacia", label:"Leading this" } },
             { id:"sat-p-grouping-pm", t:16*60, title:"Grouping", track:"shared" },
-            { id:"sat-p-comp",     t:16*60+30, title:"Dinner Competition", track:"shared", duty:{ who:"Anthony", label:"Leading this" } },
+            { id:"sat-p-comp",     t:16*60+30, title:"Cooking Competition / Prep Dinner", track:"shared", duty:{ who:"Anthony", label:"Leading this" } },
             { id:"sat-p-dinner",   t:17*60+30, title:"Dinner", foodNote:"Ground beef 8 · rice 18 cups · veggies 16 lbs", foodFor:"Anthony", foodGroup:"Adults", track:"shared" },
             { id:"sat-p-break",    t:18*60+45, title:"Break", track:"shared" },
             { id:"sat-p-family",   t:19*60,    title:"Family Time", track:"shared", duty:{ who:"Mandy Chung", label:"Leading this" } },
@@ -1133,7 +1133,7 @@
             { activity:"Friday Games Together", who:"Acacia" },
             { activity:"Friday Family Time", who:"Rute", note:"Act out parents, children different scenarios + other things for one another to notice" },
             { activity:"Saturday Amazing Race", who:"Timothy Ko & Acacia" },
-            { activity:"Saturday Dinner Competition", who:"Anthony" },
+            { activity:"Saturday Cooking Competition", who:"Anthony" },
             { activity:"Saturday Family Time", who:"Mandy Chung", note:"Trivia" },
             { activity:"Friday Dinner Coordination", who:"Anthony", cat:"Coordination" },
             { activity:"Saturday Breakfast Coordination", who:"Acacia & Timothy Ko", cat:"Coordination" },
@@ -1229,7 +1229,7 @@
           { driver:"Chris", car:"Blue Toyota Grand Highlander" },
           { driver:"Justin Chan", car:null }
         ],
-        /* Dinner Competition (sheet tab "Dessert Competition", added
+        /* Cooking Competition (sheet tab "Dessert Competition", added
            2026-11-23 evening): Saturday teams — name, dish (some teams
            have none yet), leader (first-listed member, starred like
            room leaders) and members in sheet order. Every camper is
@@ -1271,9 +1271,11 @@
             { name:"Timothy & Acacia", users:["Timothy Ko", "Acacia"], owner:"Timothy Ko" },
             { name:"Children", users:[], owner:"Anthony" }
           ],
-          /* category drives the two awards: Best Dessert = highest
-             Judges' average among the 5 dessert dishes; Best
-             Appetizer = highest among the 2 youth (appetizer) dishes. */
+          /* category drives the Judges' Awards: Best Dessert =
+             highest Judges' average among the 5 dessert dishes;
+             Best Appetizer = highest among the 2 youth (appetizer)
+             dishes. The People's Award is separate: one overall
+             winner by highest People's average across all 7 dishes. */
           teams: [
             { name:"Dad 1", dish:"Egg Custard", category:"dessert", leader:"Gordon", members:["Gordon", "Chris", "Kenneth", "Leo"] },
             { name:"Dad 2", dish:"Malaysia dessert “bur bur cha cha”", category:"dessert", leader:"Danny", members:["Danny", "Osborn", "Justin Chan", "Tommy"] },
@@ -1460,7 +1462,7 @@
           if (grp === x.cleanupGroup) roles.push({ role:"Clean up", label:grp, leader:leaderTextForGroup(grp) });
           roles.forEach(function(r){
             var jumpId = r.role === "Prepare" ? (x.prepareJump || x.jump) : (x.cleanupJump || x.jump);
-            var td = timedDuty("Meals", r.role + " \u2014 " + x.meal + " (" + r.label + ")", jumpId);
+            var td = timedDuty("Meals", r.role + " — " + x.meal + " (" + r.label + ")", jumpId);
             if (!td) return;
             td.role = r.role; td.meal = x.meal; td.group = r.label;
             td.leaderText = r.leader;
@@ -1600,7 +1602,7 @@
         if (s.indexOf("fri family") > -1 || s.indexOf("friday family") > -1) return "fri-family";
         if (s.indexOf("friday dinner") > -1 || s.indexOf("cha siu") > -1) return "fri-dinner";
         if (s.indexOf("breakfast") > -1) return "sat-e-breakfast";
-        if (s.indexOf("dinner competition") > -1) return "sat-e-comp";
+        if (s.indexOf("cooking competition") > -1 || s.indexOf("dinner competition") > -1) return "sat-e-comp";
         if (s.indexOf("amazing race") > -1) return "sat-e-race";
         if (s.indexOf("sat family") > -1 || s.indexOf("saturday family") > -1 || s.indexOf("trivia") > -1) return "sat-e-family";
         if (s.indexOf("saturday dinner") > -1) return "sat-e-dinner";
@@ -1901,11 +1903,11 @@
         }
         el.innerHTML = '<div class="sim-head" id="simDragHandle" title="Drag to move this panel">'
           + '<span class="sim-grip" aria-hidden="true"><svg viewBox="0 0 12 20" fill="currentColor"><circle cx="3" cy="3" r="1.8"/><circle cx="9" cy="3" r="1.8"/><circle cx="3" cy="10" r="1.8"/><circle cx="9" cy="10" r="1.8"/><circle cx="3" cy="17" r="1.8"/><circle cx="9" cy="17" r="1.8"/></svg></span>'
-          + '<span class="sim-text">Simulation \u2014 <span id="simReadout">' + esc(simLabelLong()) + '</span> \u2014 not live</span>'
+          + '<span class="sim-text">Simulation — <span id="simReadout">' + esc(simLabelLong()) + '</span> — not live</span>'
           + '<button type="button" class="sim-exit" id="simExitBtn" aria-label="Exit simulation">\u2715 Exit</button>'
           + '</div>'
           + '<div class="sim-controls">'
-          + '<input type="range" id="simSlider" min="0" max="' + SIM_SLIDER_MAX + '" step="5" value="' + simSliderValue() + '" aria-label="Simulated camp time \u2014 drag to scrub through camp" />'
+          + '<input type="range" id="simSlider" min="0" max="' + SIM_SLIDER_MAX + '" step="5" value="' + simSliderValue() + '" aria-label="Simulated camp time — drag to scrub through camp" />'
           + '<span class="sim-days">'
           + '<button type="button" class="sim-day-btn" data-simday="0" title="Jump to Friday 9:00 AM">Fri</button>'
           + '<button type="button" class="sim-day-btn" data-simday="1" title="Jump to Saturday 9:00 AM">Sat</button>'
@@ -2287,7 +2289,7 @@
         });
         var h = '<section class="day-section day-' + dayIdx + '"><div class="day-head"><h2>' + d.full + "</h2>" + (isToday ? '<span class="today-flag">Today</span>' : "") + "</div>";
         if (dayIdx === 2 && nowInfo.key >= CAMP_END_KEY) {
-          h += '<div class="camp-over-card">Camp\u2019s over \u2014 see you next time!</div>';
+          h += '<div class="camp-over-card">Camp\u2019s over — see you next time!</div>';
         }
         function secHtml(key, label, cls){
           if (!buckets[key].length) return "";
@@ -2454,7 +2456,7 @@
       }
 
       /* ================= Rendering: Competition ================= */
-      /* Dinner Competition tab, modelled on Rooms: the intro line,
+      /* Cooking Competition tab, modelled on Rooms: the intro line,
          the picked user's own team as a big card (dish named when
          the team has one; leader starred + bold, first), then one
          card per other team. No notes or explanations on this tab. */
@@ -2970,14 +2972,33 @@
           return { state: stateVal, rows: rows, generation: generationVal };
         } catch(e){ return null; }
       }
+      /* Direct fetch helper: load the Google gviz URL and
+         parse it. This is the exact same code that runs on
+         the live GitHub site — one source, no snapshots,
+         no baked-in copies. A failed fetch (offline, or a
+         preview window that blocks outbound calls) is silent:
+         onParsed is simply not called and the caller's last
+         state stays on screen, so polling can retry. */
+      function fetchParsed(url, parser, onParsed, onDone){
+        function done(){ if (onDone) onDone(); }
+        if (typeof fetch !== "function") { done(); return null; }
+        return fetch(url).then(function(r){
+          if (!r.ok) throw new Error("fetch failed");
+          return r.text();
+        }).then(function(text){
+          var parsed = parser(text);
+          if (!parsed) throw new Error("unparseable");
+          done();
+          onParsed(parsed);
+        }).catch(function(){
+          done();
+          return null;
+        });
+      }
       function fetchCompResults(){
         if (compResultsFetching) return;
-        if (typeof fetch !== "function") return;
         compResultsFetching = true;
-        fetch(RESULTS_GVIZ_URL).then(function(r){ return r.text(); }).then(function(text){
-          compResultsFetching = false;
-          var parsed = parseGvizResults(text);
-          if (!parsed) return;
+        fetchParsed(RESULTS_GVIZ_URL, parseGvizResults, function(parsed){
           var prevState = compResults ? compResults.state : null;
           compResults = parsed;
           /* A final result from a NEW generation (a later
@@ -3003,10 +3024,10 @@
             }
           }
           syncTrackerTab();
-        }).catch(function(){ compResultsFetching = false; });
+        }, function(){ compResultsFetching = false; });
       }
       function fmtAvg1(n){
-        return (n == null || isNaN(n)) ? "\u2014" : Number(n).toFixed(1);
+        return (n == null || isNaN(n)) ? "—" : Number(n).toFixed(1);
       }
       /* ================= Voting tracker (TRACKER_VIEWERS only) =================
          Reads the LIVE form responses (the linked sheet's
@@ -3123,13 +3144,11 @@
       }
       function fetchTrackerResponses(){
         if (trackerFetching) return;
-        if (typeof fetch !== "function") return;
         if (!canViewTracker()) return;
         trackerFetching = true;
-        fetch(TRACKER_GVIZ_URL).then(function(r){ return r.text(); }).then(function(text){
-          trackerFetching = false;
-          var parsed = parseGvizResponses(text);
-          if (!parsed) return; /* silent failure: keep last shown state */
+        fetchParsed(TRACKER_GVIZ_URL, parseGvizResponses, function(parsed){
+          /* silent failure keeps last shown state —
+             fetchParsed simply does not call this then */
           var sig = parsed.map(function(r){
             return [r.voter, r.ballot, r.dish, r.taste, r.presentation, r.creativity, r.story, r.rules, r.total, r.peoples]
               .map(function(v){ return v == null ? "" : String(v); }).join("|");
@@ -3139,7 +3158,7 @@
           trackerSignature = sig;
           if (changed && state.view === "tracker" && compPhase() === "after"
               && !(compResults && compResults.state === "final")) renderTracker();
-        }).catch(function(){ trackerFetching = false; });
+        }, function(){ trackerFetching = false; });
       }
       function trackerDishSets(){
         var byBallot = {}, byVoter = {};
@@ -3457,30 +3476,43 @@
       /* ================= Final results: present-card reveal =================
          Shown ONLY from renderCompetition's gated branch (camp
          time past Saturday 5:30 PM AND feed State "final").
-         Category tabs (Dessert / Appetizers) switch the whole
-         section. Each category has two award cards — Judges'
-         Award (highest JudgesAvg) and People's Award (highest
-         PeoplesAvg) — that start as wrapped presents: the winner
-         is not in the closed card's markup at all. Each card
-         needs a random 3–7 taps to open on this device: the
-         threshold is drawn once, the first time that card is
-         rendered unopened here, and persisted in localStorage
-         alongside the reveal state (keyed per category+award),
-         so it never changes mid-tapping or on revisit; other
-         devices draw their own. Taps shake the card and grow
-         CSS cracks as they approach the threshold, and the
-         final tap replaces the card with the reveal; the
-         opened state persists per device in localStorage,
-         keyed per category+award. A tie reveals every tied dish
-         as a joint winner. If the signed-in user is on a winning
-         team, the revealed card shows a "You won!" banner.
-         The whole reveal state is per results GENERATION (the
-         feed's Cutoff value): a new closing reseals every card
-         with fresh tap counts automatically — see
-         syncFinalRevealGeneration below.
-         Below the cards, Full standings lists only the active
-         category's dishes, sorted by Judges' average. */
-      var FINAL_REVEAL_KEY = "angelsCampFinalRevealV1";
+         The view is TWO clearly labeled sections, in order:
+         SECTION 1 "Judges' Awards" — the Dessert / Appetizers
+         category tabs, one Judges' Award present per category
+         (highest JudgesAvg in that category) and that
+         category's full standings. SECTION 2 "People's Award"
+         — ONE overall present (highest PeoplesAvg across ALL
+         dishes, both categories). Three presents total.
+         Category tabs (Dessert / Appetizers) switch only the
+         Judges' card and that category's standings.
+         Each card starts as a wrapped present: the winner is
+         not in the closed card's markup at all. Each card needs
+         a random 3–7 taps to open on this device: the threshold
+         is drawn once, the first time that card is rendered
+         unopened here, and persisted in localStorage alongside
+         the reveal state (keys: peoples-overall, judges-dessert,
+         judges-appetizer), so it never changes mid-tapping or
+         on revisit; other devices draw their own. Taps shake
+         the card and grow CSS cracks as they approach the
+         threshold, and the final tap replaces the card with
+         the reveal; the opened state persists per device in
+         localStorage. A tie reveals every tied dish as a joint
+         winner in that one card. If the signed-in user is on a
+         winning team, the revealed card shows a "You won!"
+         banner. The whole reveal state is per results
+         GENERATION (the feed's Cutoff value): a new closing
+         reseals all 3 cards with fresh tap counts automatically
+         — see syncFinalRevealGeneration below.
+         Below the Judges' card, Full standings lists only the
+         active category's dishes, sorted by Judges' average,
+         and appears once that category's Judges' Award has
+         been opened on this device. */
+      /* Storage keys are V2: the bump reseals every present on
+         every device once (requested device reset, Nov 24) so
+         the awards can be tapped open again. Mechanics are
+         unchanged — same tap counts, cracks, and per-generation
+         reseal below, just fresh sealed state. */
+      var FINAL_REVEAL_KEY = "angelsCampFinalRevealV2";
       var finalCategory = "dessert";
       var finalTaps = {};
       function loadFinalRevealed(){
@@ -3497,7 +3529,7 @@
          per card per device and persisted alongside the reveal
          state so a card's threshold never changes mid-tapping
          or on revisit. Different devices draw independently. */
-      var FINAL_TAPS_NEEDED_KEY = "angelsCampFinalTapsNeededV1";
+      var FINAL_TAPS_NEEDED_KEY = "angelsCampFinalTapsNeededV2";
       function loadFinalTapsNeeded(){
         try {
           var o = JSON.parse(localStorage.getItem(FINAL_TAPS_NEEDED_KEY) || "{}");
@@ -3536,7 +3568,7 @@
          generation, which also reseals presents opened
          before generations existed. Returns true when a
          reset happened, so the fetch can re-render. */
-      var FINAL_GENERATION_KEY = "angelsCampFinalGenerationV1";
+      var FINAL_GENERATION_KEY = "angelsCampFinalGenerationV2";
       function loadFinalGeneration(){
         try {
           var v = localStorage.getItem(FINAL_GENERATION_KEY);
@@ -3633,6 +3665,19 @@
           return e.category === cat && e[field] != null && !isNaN(e[field]) && Math.abs(e[field] - best) < 1e-9;
         }) };
       }
+      /* People's Award is a SINGLE overall award: highest
+         People's average across ALL dishes (both categories).
+         Ties return every tied dish as joint winners. */
+      function finalWinnersOverall(erows, field){
+        var best = null;
+        erows.forEach(function(e){
+          if (e[field] != null && !isNaN(e[field]) && (best == null || e[field] > best)) best = e[field];
+        });
+        if (best == null) return { score: null, list: [] };
+        return { score: best, list: erows.filter(function(e){
+          return e[field] != null && !isNaN(e[field]) && Math.abs(e[field] - best) < 1e-9;
+        }) };
+      }
       function finalUserWon(team){
         if (!team || !state.user) return false;
         var ms = team.members || [];
@@ -3645,7 +3690,7 @@
         }).join("") + "</ul>";
       }
       function fmtCrit1(n){
-        return (n == null || isNaN(n)) ? "\u2014" : Number(n).toFixed(1);
+        return (n == null || isNaN(n)) ? "—" : Number(n).toFixed(1);
       }
       /* Per-criteria averages as a tidy mini-list: each criterion
          on its OWN line, label left, score right. The only way
@@ -3670,7 +3715,8 @@
         var key = finalAwardKey(cat, award);
         var title = award === "judges" ? "Judges&rsquo; Award" : "People&rsquo;s Award";
         var plainTitle = award === "judges" ? "Judges" : "People";
-        var catName = cat === "dessert" ? "Dessert" : "Appetizers";
+        var isOverall = cat === "overall";
+        var catName = isOverall ? "Overall \u00b7 All dishes" : (cat === "dessert" ? "Dessert" : "Appetizers");
         if (!finalRevealed[key]) {
           var needed = tapsNeededFor(key);
           var taps = finalTaps[key] || 0;
@@ -3692,7 +3738,7 @@
             + "</span></button>";
         }
         var field = award === "judges" ? "judgesAvg" : "peoplesAvg";
-        var win = finalWinners(erows, cat, field);
+        var win = isOverall ? finalWinnersOverall(erows, field) : finalWinners(erows, cat, field);
         var mine = win.list.some(function(e){ return finalUserWon(e.team); });
         /* Winner block order (Anthony): dish name first, then
            the "You won!" banner when this winner is the viewer's
@@ -3723,11 +3769,12 @@
       }
       var finalExpanded = {};
       function finalStandingsHtml(erows, cat){
-        /* Standings stay hidden until BOTH award cards in this
-           category have been opened on this device. */
-        var bothOpen = !!(finalRevealed[finalAwardKey(cat, "judges")] && finalRevealed[finalAwardKey(cat, "peoples")]);
-        if (!bothOpen) {
-          return '<div class="standings-locked">Open both awards to see the full standings</div>';
+        /* Standings appear once this category's Judges' Award
+           has been opened on this device. The overall People's
+           Award (its own section below) does not gate standings. */
+        var judgesOpen = !!finalRevealed[finalAwardKey(cat, "judges")];
+        if (!judgesOpen) {
+          return '<div class="standings-locked">Open the Judges&rsquo; Award to see the full standings</div>';
         }
         var inCat = erows.filter(function(e){ return e.category === cat; }).slice().sort(function(a, b){
           var ja = (a.judgesAvg == null || isNaN(a.judgesAvg)) ? -Infinity : a.judgesAvg;
@@ -3765,12 +3812,14 @@
         var erows = enrichFinalRows(res.rows || []);
         var cat = finalCategory === "appetizer" ? "appetizer" : "dessert";
         return '<div class="resp-sec" style="margin-top:10px"><h2>Final results</h2><p>Keep tapping a present to unwrap its award.</p></div>'
+          + '<div class="resp-sec"><h2>Judges&rsquo; Awards</h2><p>One winner in each category, from the judges&rsquo; scores.</p></div>'
           + '<div class="final-cat-tabs" role="tablist" aria-label="Results by category">'
           + '<button type="button" role="tab" data-final-cat="dessert" aria-selected="' + (cat === "dessert" ? "true" : "false") + '">Dessert</button>'
           + '<button type="button" role="tab" data-final-cat="appetizer" aria-selected="' + (cat === "appetizer" ? "true" : "false") + '">Appetizers</button></div>'
           + awardCardHtml(erows, cat, "judges")
-          + awardCardHtml(erows, cat, "peoples")
-          + finalStandingsHtml(erows, cat);
+          + finalStandingsHtml(erows, cat)
+          + '<div class="resp-sec" style="margin-top:26px"><h2>People&rsquo;s Award</h2><p>One overall winner across all dishes, from everyone&rsquo;s votes.</p></div>'
+          + awardCardHtml(erows, "overall", "peoples");
       }
       function handleAwardTap(key){
         if (finalRevealed[key]) return;
@@ -4024,13 +4073,13 @@
         var html = '<p class="resp-intro" style="margin-top:12px">' + esc(C.introText) + "</p>"
           + '<p class="star-note" style="margin-top:6px">Please find Anthony or Mandy if there\'s any questions.</p>';
         if (phase === "during") {
-          html += '<div class="comp-timer-card"><p class="comp-timer-label">\u2605 Dinner competition is on \u2605</p>'
+          html += '<div class="comp-timer-card"><p class="comp-timer-label">\u2605 Cooking competition is on \u2605</p>'
             + '<p class="comp-timer-value">Time remaining: <span id="compTimer">' + fmtCountdown(compRemainingSeconds()) + "</span></p>"
             + '<p class="comp-timer-sub">Ends 5:30 PM</p></div>';
         }
         if (!state.user) {
           html += '<div class="prompt-card"><h2>Your team</h2>'
-            + "<p>Pick your name once and this tab shows your dinner competition team.</p>"
+            + "<p>Pick your name once and this tab shows your cooking competition team.</p>"
             + '<button class="btn primary" id="compPickBtn">Pick your name</button></div>';
           area.innerHTML = html + compRulesHtml() + compCriteriaHtml();
           var pb = document.getElementById("compPickBtn");
