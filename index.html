@@ -3791,6 +3791,25 @@
           + (open ? '<div class="stand-detail">' + detailHtml + "</div>" : "")
           + "</div>";
       }
+      /* Standard competition ranking ("1224") for a standings
+         list already sorted by its ranking average: rows whose
+         averages are exactly equal — the same epsilon equality
+         the winner logic uses — SHARE a rank number, and the
+         next rank skips the tied slots (10, 10, 9.5, 8 ranks
+         1, 1, 3, 4). Unscored rows (null/NaN, sorted last as
+         -Infinity) never tie with each other. */
+      function compRankList(sorted, field){
+        var ranks = [];
+        var prevVal = null, prevRank = 0;
+        sorted.forEach(function(e, i){
+          var v = e[field];
+          var val = (v == null || isNaN(v)) ? -Infinity : v;
+          var rank = (i > 0 && Math.abs(val - prevVal) < 1e-9) ? prevRank : i + 1;
+          ranks.push(rank);
+          prevVal = val; prevRank = rank;
+        });
+        return ranks;
+      }
       function finalStandingsHtml(erows, cat){
         /* Judges' standings for one category: every dish in
            the category ranked by Judges' average, winner
@@ -3811,6 +3830,7 @@
           return pb - pa;
         });
         if (!inCat.length) return '<div class="resp-sec"><h2>Full standings</h2></div><div class="note-card">No dishes in this category.</div>';
+        var ranks = compRankList(inCat, "judgesAvg");
         var body = inCat.map(function(e, i){
           /* Expanded detail order matches the award cards:
              the per-criteria averages first, members last —
@@ -3821,7 +3841,7 @@
             : "";
           var detail = (hasAnyCrit(e) ? criteriaAvgHtml(e) : '<div class="crit-avg-line">No judges&rsquo; criteria yet.</div>') + membersHtml;
           var nums = '<span><span class="sb-kind">Judges&rsquo;</span> avg <b>' + fmtAvg1(e.judgesAvg) + "</b> / 100</span>";
-          return standRowHtml(e, i + 1, win.list.indexOf(e) > -1, nums, detail, cat + ":" + e.display);
+          return standRowHtml(e, ranks[i], win.list.indexOf(e) > -1, nums, detail, cat + ":" + e.display);
         }).join("");
         return '<div class="resp-sec"><h2>Full standings</h2></div>' + body;
       }
@@ -3847,12 +3867,13 @@
           return String(a.display).localeCompare(String(b.display));
         });
         if (!all.length) return '<div class="resp-sec"><h2>Full standings</h2></div><div class="note-card">No dishes yet.</div>';
+        var pranks = compRankList(all, "peoplesAvg");
         var body = all.map(function(e, i){
           var membersHtml = (e.team && (e.team.members || []).length)
             ? '<div class="winner-members-h">Members</div>' + winnerMembersHtml(e.team)
             : '<div class="crit-avg-line">Members not listed.</div>';
           var nums = '<span><span class="sb-kind">People&rsquo;s</span> avg <b>' + fmtAvg1(e.peoplesAvg) + "</b> / 10</span>";
-          return standRowHtml(e, i + 1, win.list.indexOf(e) > -1, nums, membersHtml, "peoples:" + e.display);
+          return standRowHtml(e, pranks[i], win.list.indexOf(e) > -1, nums, membersHtml, "peoples:" + e.display);
         }).join("");
         return '<div class="resp-sec"><h2>Full standings</h2></div>' + body;
       }
