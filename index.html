@@ -464,7 +464,7 @@
       .sb-kind{ font-weight:400; color:var(--muted);}
       .award-badge{ display:inline-block; background:var(--mustard-bg); border:1.5px solid var(--mustard-line); color:var(--mustard-strong); border-radius:809.19px; padding:1.62px 8.1px; font-size:0.6318rem; font-weight:400; vertical-align:2px; margin-left:4.86px; white-space:nowrap;}
 
-      /* ---------- Final results: category tabs, present cards, standings ---------- */
+      /* ---------- Final results: award tabs, category tabs, present cards, standings ---------- */
       .final-cat-tabs{ display:flex; gap:4.86px; background:var(--surface); border:1px solid var(--line); border-radius:809.19px; padding:4.05px; margin-top:8.1px; box-shadow:var(--shadow);}
       .final-cat-tabs button{ flex:1; font:inherit; font-weight:400; font-size:0.729rem; border:0; background:transparent; color:var(--ink-soft); border-radius:809.19px; padding:8.1px 9.72px; cursor:pointer; min-height:37.26px;}
       .final-cat-tabs button[aria-selected="true"]{ background:var(--accent); color:#FFF7EA;}
@@ -586,7 +586,9 @@
       .stand-detail .winner-members{ max-width:none; margin:3.24px 0 1.62px;}
       .standings-locked{ background:var(--surface); border:1.5px dashed var(--line); border-radius:var(--radius); padding:12.96px 11.34px; text-align:center; font-weight:400; color:var(--muted); margin-top:9.72px; line-height:1.4;}
       .stand-card{ background:var(--surface); border:1px solid var(--line); border-radius:12.96px; margin-top:6.48px; overflow:hidden;}
-      .stand-head{ display:block; width:100%; text-align:left; font:inherit; color:inherit; background:transparent; border:0; padding:9.72px 11.34px; cursor:pointer;}
+      .stand-head{ display:flex; align-items:flex-start; gap:9.72px; width:100%; text-align:left; font:inherit; color:inherit; background:transparent; border:0; padding:9.72px 11.34px; cursor:pointer;}
+      .stand-rank{ flex:none; width:24.3px; height:24.3px; margin-top:1.62px; border-radius:50%; background:var(--surface-2); border:1px solid var(--line); color:var(--ink-soft); font-weight:900; font-size:0.7452rem; display:flex; align-items:center; justify-content:center; font-variant-numeric:tabular-nums;}
+      .stand-main{ flex:1 1 auto; min-width:0; display:block;}
       .stand-dish{ font-weight:900; font-size:0.8262rem; line-height:1.25; color:var(--ink); display:block;}
       .stand-nums{ display:flex; flex-wrap:wrap; gap:3.24px 14.58px; margin-top:3.24px; font-weight:400; color:var(--ink-soft); font-size:0.81rem; line-height:1.45;}
       .stand-toggle-hint{ font-weight:400; color:var(--accent-strong); font-size:0.7452rem; margin-top:3.24px; display:block;}
@@ -3476,15 +3478,18 @@
       /* ================= Final results: present-card reveal =================
          Shown ONLY from renderCompetition's gated branch (camp
          time past Saturday 5:30 PM AND feed State "final").
-         The view is TWO clearly labeled sections, in order:
-         SECTION 1 "Judges' Awards" — the Dessert / Appetizers
-         category tabs, one Judges' Award present per category
-         (highest JudgesAvg in that category) and that
-         category's full standings. SECTION 2 "People's Award"
-         — ONE overall present (highest PeoplesAvg across ALL
-         dishes, both categories). Three presents total.
-         Category tabs (Dessert / Appetizers) switch only the
-         Judges' card and that category's standings.
+         The view is TWO top-level tabs, "Judges" (default) and
+         "People's"; switching tabs switches the award card AND
+         its standings together. JUDGES TAB — the Dessert /
+         Appetizers category toggle, one Judges' Award present
+         per category (highest JudgesAvg in that category) and
+         that category's full standings ranked by Judges'
+         average. PEOPLE'S TAB — ONE overall present (highest
+         PeoplesAvg across ALL dishes, both categories) and the
+         full People's standings: all dishes ranked by People's
+         average. Three presents total. The category toggle
+         switches only the Judges' card and that category's
+         standings.
          Each card starts as a wrapped present: the winner is
          not in the closed card's markup at all. Each card needs
          a random 3–7 taps to open on this device: the threshold
@@ -3503,16 +3508,21 @@
          GENERATION (the feed's Cutoff value): a new closing
          reseals all 3 cards with fresh tap counts automatically
          — see syncFinalRevealGeneration below.
-         Below the Judges' card, Full standings lists only the
-         active category's dishes, sorted by Judges' average,
-         and appears once that category's Judges' Award has
-         been opened on this device. */
+         Below each award card, its Full standings appear once
+         that award has been opened on this device (until then
+         a hint stands in their place). Standings list EVERY
+         dish in scope — the winner included at #1 with a small
+         "Winner" tag — each row showing its rank, dish name
+         and the tab's average, expandable for detail
+         (Judges': per-criteria averages, then members;
+         People's: members only). */
       /* Storage keys are V2: the bump reseals every present on
          every device once (requested device reset, Nov 24) so
          the awards can be tapped open again. Mechanics are
          unchanged — same tap counts, cracks, and per-generation
          reseal below, just fresh sealed state. */
       var FINAL_REVEAL_KEY = "angelsCampFinalRevealV2";
+      var finalAwardTab = "judges";
       var finalCategory = "dessert";
       var finalTaps = {};
       function loadFinalRevealed(){
@@ -3768,14 +3778,31 @@
           + "</article>";
       }
       var finalExpanded = {};
+      /* One standings row, shared by both tabs: rank chip,
+         dish name (with a small "Winner" tag on the winning
+         dish), the tab's average line, and an expandable
+         detail block. */
+      function standRowHtml(e, rank, isWinner, numsHtml, detailHtml, key){
+        var open = !!finalExpanded[key];
+        return '<div class="stand-card"><button type="button" class="stand-head" data-stand-toggle="' + esc(key) + '" aria-expanded="' + (open ? "true" : "false") + '">'
+          + '<span class="stand-rank" aria-hidden="true">' + rank + "</span>"
+          + '<span class="stand-main"><span class="stand-dish">' + esc(e.display) + (isWinner ? '<span class="award-badge">Winner</span>' : "") + "</span>"
+          + '<span class="stand-nums">' + numsHtml + "</span>"
+          + '<span class="stand-toggle-hint">' + (open ? "Tap to collapse" : "Tap to see details") + "</span></span></button>"
+          + (open ? '<div class="stand-detail">' + detailHtml + "</div>" : "")
+          + "</div>";
+      }
       function finalStandingsHtml(erows, cat){
-        /* Standings appear once this category's Judges' Award
-           has been opened on this device. The overall People's
-           Award (its own section below) does not gate standings. */
+        /* Judges' standings for one category: every dish in
+           the category ranked by Judges' average, winner
+           included at #1 with a "Winner" tag. They appear
+           once this category's Judges' Award has been opened
+           on this device. */
         var judgesOpen = !!finalRevealed[finalAwardKey(cat, "judges")];
         if (!judgesOpen) {
           return '<div class="standings-locked">Open the Judges&rsquo; Award to see the full standings</div>';
         }
+        var win = finalWinners(erows, cat, "judgesAvg");
         var inCat = erows.filter(function(e){ return e.category === cat; }).slice().sort(function(a, b){
           var ja = (a.judgesAvg == null || isNaN(a.judgesAvg)) ? -Infinity : a.judgesAvg;
           var jb = (b.judgesAvg == null || isNaN(b.judgesAvg)) ? -Infinity : b.judgesAvg;
@@ -3785,41 +3812,70 @@
           return pb - pa;
         });
         if (!inCat.length) return '<div class="resp-sec"><h2>Full standings</h2></div><div class="note-card">No dishes in this category.</div>';
-        var body = inCat.map(function(e){
-          var key = cat + ":" + e.display;
-          var open = !!finalExpanded[key];
+        var body = inCat.map(function(e, i){
           /* Expanded detail order matches the award cards:
-             scores first (the two averages in the header plus
-             the per-criteria lines here), members last — same
-             "Members" caption + plain names (no leader star)
-             as winnerMembersHtml on the award cards. */
+             the per-criteria averages first, members last —
+             same "Members" caption + plain names (no leader
+             star) as winnerMembersHtml on the award cards. */
           var membersHtml = (e.team && (e.team.members || []).length)
             ? '<div class="winner-members-h">Members</div>' + winnerMembersHtml(e.team)
             : "";
-          var detail = open
-            ? '<div class="stand-detail">' + (hasAnyCrit(e) ? criteriaAvgHtml(e) : '<div class="crit-avg-line">No judges&rsquo; criteria yet.</div>') + membersHtml + "</div>"
-            : "";
-          return '<div class="stand-card"><button type="button" class="stand-head" data-stand-toggle="' + esc(key) + '" aria-expanded="' + (open ? "true" : "false") + '">'
-            + '<span class="stand-dish">' + esc(e.display) + "</span>"
-            + '<span class="stand-nums"><span><span class="sb-kind">Judges&rsquo;</span> avg <b>' + fmtAvg1(e.judgesAvg) + '</b></span>'
-            + '<span><span class="sb-kind">People&rsquo;s</span> avg <b>' + fmtAvg1(e.peoplesAvg) + "</b></span></span>"
-            + '<span class="stand-toggle-hint">' + (open ? "Tap to collapse" : "Tap to see details") + "</span></button>"
-            + detail + "</div>";
+          var detail = (hasAnyCrit(e) ? criteriaAvgHtml(e) : '<div class="crit-avg-line">No judges&rsquo; criteria yet.</div>') + membersHtml;
+          var nums = '<span><span class="sb-kind">Judges&rsquo;</span> avg <b>' + fmtAvg1(e.judgesAvg) + "</b> / 100</span>";
+          return standRowHtml(e, i + 1, win.list.indexOf(e) > -1, nums, detail, cat + ":" + e.display);
+        }).join("");
+        return '<div class="resp-sec"><h2>Full standings</h2></div>' + body;
+      }
+      function finalPeoplesStandingsHtml(erows){
+        /* People's standings: ALL dishes (both categories)
+           ranked by People's average, winner(s) included at
+           the top with a "Winner" tag. They appear once the
+           People's Award has been opened on this device.
+           People's has no criteria, so the expanded detail is
+           just the team's members. */
+        var peoplesOpen = !!finalRevealed[finalAwardKey("overall", "peoples")];
+        if (!peoplesOpen) {
+          return '<div class="standings-locked">Open the People&rsquo;s Award to see the full standings</div>';
+        }
+        var win = finalWinnersOverall(erows, "peoplesAvg");
+        var all = erows.slice().sort(function(a, b){
+          var pa = (a.peoplesAvg == null || isNaN(a.peoplesAvg)) ? -Infinity : a.peoplesAvg;
+          var pb = (b.peoplesAvg == null || isNaN(b.peoplesAvg)) ? -Infinity : b.peoplesAvg;
+          if (pb !== pa) return pb - pa;
+          var ja = (a.judgesAvg == null || isNaN(a.judgesAvg)) ? -Infinity : a.judgesAvg;
+          var jb = (b.judgesAvg == null || isNaN(b.judgesAvg)) ? -Infinity : b.judgesAvg;
+          if (jb !== ja) return jb - ja;
+          return String(a.display).localeCompare(String(b.display));
+        });
+        if (!all.length) return '<div class="resp-sec"><h2>Full standings</h2></div><div class="note-card">No dishes yet.</div>';
+        var body = all.map(function(e, i){
+          var membersHtml = (e.team && (e.team.members || []).length)
+            ? '<div class="winner-members-h">Members</div>' + winnerMembersHtml(e.team)
+            : '<div class="crit-avg-line">Members not listed.</div>';
+          var nums = '<span><span class="sb-kind">People&rsquo;s</span> avg <b>' + fmtAvg1(e.peoplesAvg) + "</b> / 10</span>";
+          return standRowHtml(e, i + 1, win.list.indexOf(e) > -1, nums, membersHtml, "peoples:" + e.display);
         }).join("");
         return '<div class="resp-sec"><h2>Full standings</h2></div>' + body;
       }
       function finalResultsHtml(res){
         var erows = enrichFinalRows(res.rows || []);
         var cat = finalCategory === "appetizer" ? "appetizer" : "dessert";
-        return '<div class="resp-sec" style="margin-top:10px"><h2>Final results</h2><p>Keep tapping a present to unwrap its award.</p></div>'
-          + '<div class="resp-sec"><h2>Judges&rsquo; Awards</h2><p>One winner in each category, from the judges&rsquo; scores.</p></div>'
+        var tab = finalAwardTab === "peoples" ? "peoples" : "judges";
+        var head = '<div class="resp-sec" style="margin-top:10px"><h2>Final results</h2><p>Keep tapping a present to unwrap its award.</p></div>'
+          + '<div class="final-cat-tabs" role="tablist" aria-label="Results by award">'
+          + '<button type="button" role="tab" data-final-tab="judges" aria-selected="' + (tab === "judges" ? "true" : "false") + '">Judges</button>'
+          + '<button type="button" role="tab" data-final-tab="peoples" aria-selected="' + (tab === "peoples" ? "true" : "false") + '">People&rsquo;s</button></div>';
+        if (tab === "peoples") {
+          return head
+            + awardCardHtml(erows, "overall", "peoples")
+            + finalPeoplesStandingsHtml(erows);
+        }
+        return head
           + '<div class="final-cat-tabs" role="tablist" aria-label="Results by category">'
           + '<button type="button" role="tab" data-final-cat="dessert" aria-selected="' + (cat === "dessert" ? "true" : "false") + '">Dessert</button>'
           + '<button type="button" role="tab" data-final-cat="appetizer" aria-selected="' + (cat === "appetizer" ? "true" : "false") + '">Appetizers</button></div>'
           + awardCardHtml(erows, cat, "judges")
-          + finalStandingsHtml(erows, cat)
-          + '<div class="resp-sec" style="margin-top:26px"><h2>People&rsquo;s Award</h2><p>One overall winner across all dishes, from everyone&rsquo;s votes.</p></div>'
-          + awardCardHtml(erows, "overall", "peoples");
+          + finalStandingsHtml(erows, cat);
       }
       function handleAwardTap(key){
         if (finalRevealed[key]) return;
@@ -3839,6 +3895,12 @@
         }
       }
       function bindFinalResults(){
+        document.querySelectorAll("[data-final-tab]").forEach(function(b){
+          b.addEventListener("click", function(){
+            finalAwardTab = b.getAttribute("data-final-tab");
+            renderCompetition();
+          });
+        });
         document.querySelectorAll("[data-final-cat]").forEach(function(b){
           b.addEventListener("click", function(){
             finalCategory = b.getAttribute("data-final-cat");
