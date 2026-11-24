@@ -3537,10 +3537,13 @@
          GENERATION (the feed's Cutoff value): a new closing
          reseals all 4 cards with fresh tap counts automatically
          — see syncFinalRevealGeneration below.
-         Below each winner card, its Full standings appear once
-         that winner has been opened on this device (until then
-         a hint stands in their place); on the Judges' tab the
-         standings also wait for the Judges' Reward to be open. Standings list EVERY
+         Below each winner card sits its Full standings, but
+         they only appear once EVERYTHING above them in the
+         tab has been opened: on the Judges' tab both lists
+         wait until all three presents (the Judges' Reward
+         and both winners) are open; on the People's tab the
+         single winner present gates the list. Until then a
+         hint stands in each standings' place. Standings list EVERY
          dish in scope — the winner included at #1 with a small
          "Winner" tag — each row showing its rank, dish name
          and the tab's average, expandable for detail
@@ -3894,15 +3897,19 @@
       function finalStandingsHtml(erows, cat){
         /* Judges' standings for one category: every dish in
            the category ranked by Judges' average, winner
-           included at #1 with a "Winner" tag. They appear
-           once the Judges' Reward and this category's winner
-           card have been opened on this device. */
-        if (!judgesRewardOpened()) {
-          return '<div class="standings-locked">Open the reward first</div>';
-        }
-        var judgesOpen = !!finalRevealed[finalAwardKey(cat, "judges")];
-        if (!judgesOpen) {
-          return '<div class="standings-locked">Open the ' + (cat === "dessert" ? "Dessert" : "Appetizer") + ' Winner to see the full standings</div>';
+           included at #1 with a "Winner" tag. BOTH
+           categories' standings stay hidden until ALL THREE
+           presents in the Judges' tab have been opened on
+           this device — the Judges' Reward, the Dessert
+           Winner and the Appetizer Winner — so the full
+           rankings only appear once the whole ceremony is
+           done; until then a single hint stands in each
+           standings' place. */
+        var allJudgesOpen = judgesRewardOpened()
+          && !!finalRevealed[finalAwardKey("dessert", "judges")]
+          && !!finalRevealed[finalAwardKey("appetizer", "judges")];
+        if (!allJudgesOpen) {
+          return '<div class="standings-locked">Open the reward and both winners to see the full standings</div>';
         }
         var win = finalWinners(erows, cat, "judgesAvg");
         var inCat = erows.filter(function(e){ return e.category === cat; }).slice().sort(function(a, b){
@@ -3938,7 +3945,7 @@
            just the team's members. */
         var peoplesOpen = !!finalRevealed[finalAwardKey("overall", "peoples")];
         if (!peoplesOpen) {
-          return '<div class="standings-locked">Open the People&rsquo;s Vote Winner to see the full standings</div>';
+          return '<div class="standings-locked">Open the winner to see the full standings</div>';
         }
         var win = finalWinnersOverall(erows, "peoplesAvg");
         var all = erows.slice().sort(function(a, b){
