@@ -3523,7 +3523,6 @@
          reseal below, just fresh sealed state. */
       var FINAL_REVEAL_KEY = "angelsCampFinalRevealV2";
       var finalAwardTab = "judges";
-      var finalCategory = "dessert";
       var finalTaps = {};
       function loadFinalRevealed(){
         try {
@@ -3859,7 +3858,6 @@
       }
       function finalResultsHtml(res){
         var erows = enrichFinalRows(res.rows || []);
-        var cat = finalCategory === "appetizer" ? "appetizer" : "dessert";
         var tab = finalAwardTab === "peoples" ? "peoples" : "judges";
         var head = '<div class="resp-sec" style="margin-top:10px"><h2>Final results</h2><p>Keep tapping a present to unwrap its award.</p></div>'
           + '<div class="final-cat-tabs" role="tablist" aria-label="Results by award">'
@@ -3870,12 +3868,16 @@
             + awardCardHtml(erows, "overall", "peoples")
             + finalPeoplesStandingsHtml(erows);
         }
+        /* Judges tab: no second tab row — both categories are
+           stacked in one scroll, each with its own section
+           label, award card and gated full standings. */
         return head
-          + '<div class="final-cat-tabs" role="tablist" aria-label="Results by category">'
-          + '<button type="button" role="tab" data-final-cat="dessert" aria-selected="' + (cat === "dessert" ? "true" : "false") + '">Dessert</button>'
-          + '<button type="button" role="tab" data-final-cat="appetizer" aria-selected="' + (cat === "appetizer" ? "true" : "false") + '">Appetizers</button></div>'
-          + awardCardHtml(erows, cat, "judges")
-          + finalStandingsHtml(erows, cat);
+          + '<div class="resp-sec"><h2>Dessert</h2></div>'
+          + awardCardHtml(erows, "dessert", "judges")
+          + finalStandingsHtml(erows, "dessert")
+          + '<div class="resp-sec"><h2>Appetizers</h2></div>'
+          + awardCardHtml(erows, "appetizer", "judges")
+          + finalStandingsHtml(erows, "appetizer");
       }
       function handleAwardTap(key){
         if (finalRevealed[key]) return;
@@ -3898,12 +3900,6 @@
         document.querySelectorAll("[data-final-tab]").forEach(function(b){
           b.addEventListener("click", function(){
             finalAwardTab = b.getAttribute("data-final-tab");
-            renderCompetition();
-          });
-        });
-        document.querySelectorAll("[data-final-cat]").forEach(function(b){
-          b.addEventListener("click", function(){
-            finalCategory = b.getAttribute("data-final-cat");
             renderCompetition();
           });
         });
