@@ -310,10 +310,13 @@
       .ev.is-selected{ outline:3px solid var(--amber); outline-offset:1px;}
       .ev .now-flag{ font-size:0.6067rem; font-weight:400; letter-spacing:.07em; text-transform:uppercase; color:var(--accent-strong); display:block; margin-bottom:1.34px;}
       .ev .mine-flag{ font-size:0.6067rem; font-weight:400; letter-spacing:.07em; text-transform:uppercase; color:var(--mine-ink); display:block; margin-bottom:1.34px;}
-      /* ---------- Coordinators: meal responsibility panels ----------
-         Only rendered for the six coordinators: meal-duty events on
+      /* ---------- Meal responsibility panels (Schedule) ----------
+         Only rendered for the meal-expander viewers — the six
+         coordinators plus Kerry and Winly: meal-duty events on
          the Schedule become tappable and expand a panel underneath
-         naming who prepares and who cleans up for that meal. */
+         naming who prepares and who cleans up for that meal. (The
+         Assignments "All meal duties" section stays coordinators
+         only; Kerry and Winly do not get it.) */
       .ev.is-tappable{ cursor:pointer;}
       /* The expander is a bare chevron at the RIGHT edge of the
          bubble — no text label (Anthony, 2026-11-26 eve). It
@@ -2400,10 +2403,11 @@
         }
         return '<span class="loc-tag" data-meal-loc="' + esc(meal) + '">' + esc(mealLocTextForViewer(meal, state.user)) + "</span>";
       }
-      /* ================= Coordinators: meal responsibility panels =================
-         SCHEDULE TAB ONLY, COORDINATORS ONLY (Anthony, 2026-11-26):
-         the six coordinators — the same six as the competition
-         Coordinators team — can tap any schedule event that carries
+      /* ================= Meal responsibility panels (Schedule expander) =================
+         SCHEDULE TAB ONLY (Anthony, 2026-11-26; audience extended
+         2026-11-27): the meal-expander viewers — the six
+         coordinators (the same six as the competition Coordinators
+         team) PLUS Kerry and Winly — can tap any schedule event that carries
          meal duties (EVENT_ASSIGN: the prep slots, the breakfasts
          and the meals themselves, for Friday dinner, Saturday
          breakfast / lunch / dinner and Sunday breakfast) to expand
@@ -2414,7 +2418,7 @@
          Prepare only, clean-up blocks Clean up only, and the
          actual meal events (breakfasts, lunch, dinners) show
          both. This is the
-         coordinators' overview, so it shows the REAL responsible
+         viewers' overview, so it shows the REAL responsible
          parties — the merged youth groups are single groups now,
          and a "Children" duty expands to the six children;
          Saturday Dinner Prepare has no group: its twelve named
@@ -2423,18 +2427,29 @@
          section renders one card per contributing group/party,
          header = group name, members one per line inside — even
          when only one group does the duty. It
-         shows whether or not the coordinator is personally on the
+         shows whether or not the viewer is personally on the
          duty. Everyone else's schedule is completely unchanged:
          no chevron, no panel, not tappable. Expansion state is
          per-event and session-only (state.mealOpen, in memory —
          never stored), and toggling updates the DOM in place: it
          never re-renders the schedule, so it never triggers the
-         schedule auto-scroll or moves the page. A coordinator's
+         schedule auto-scroll or moves the page. A viewer's
          own assignment bubble on the event is untouched. */
       var MEAL_COORDINATORS = ["Anthony", "Rute", "Mandy Chung", "Calvin Ko", "Timothy Ko", "Acacia"];
+      /* Schedule-expander viewers (Anthony, 2026-11-27): the six
+         coordinators PLUS Kerry and Winly, so they can see who's
+         on what duty for meals in the Schedule. This wider set
+         gates ONLY the schedule ▾ expander (evButton's tappable
+         check). The Assignments "All meal duties" section keeps
+         using isMealCoordinator above — coordinators only — and
+         Kerry / Winly get no other coordinator feature. */
+      var MEAL_EXPANDER_VIEWERS = MEAL_COORDINATORS.concat(["Kerry", "Winly"]);
       var CHEVRON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
       function isMealCoordinator(person){
         return !!(person && MEAL_COORDINATORS.indexOf(person.display) > -1);
+      }
+      function canSeeMealExpander(person){
+        return !!(person && MEAL_EXPANDER_VIEWERS.indexOf(person.display) > -1);
       }
       function mealEntryForEvent(e){
         var link = EVENT_ASSIGN[e.id];
@@ -2646,12 +2661,13 @@
         var isNow = status === "current";
         var isUpNext = status === "upnext";
         var mine = hasAssignmentOnEvent(e);
-        /* Coordinators only: meal-duty events are tappable and
+        /* Meal-expander viewers only (the six coordinators plus
+           Kerry and Winly): meal-duty events are tappable and
            expand the meal-responsibility panel (helpers above);
            the only visible cue is a small chevron at the right
            edge of the bubble — no text label. For everyone else
            nothing about the card changes. */
-        var tappable = isMealCoordinator(state.user) && !!EVENT_ASSIGN[e.id];
+        var tappable = canSeeMealExpander(state.user) && !!EVENT_ASSIGN[e.id];
         var open = !!(tappable && state.mealOpen[e.id]);
         var h = '<div class="ev' + (isNow ? " is-now is-current-filled" : "") + (isUpNext ? " is-upnext" : "") + (mine && !isNow && !isUpNext ? " is-mine" : "") + (tappable ? " is-tappable" : "") + (open ? " is-open" : "") + '" id="ev-' + e.id + '"'
           + (tappable ? ' role="button" tabindex="0" aria-expanded="' + String(open) + '" aria-controls="meal-panel-' + e.id + '" data-meal-toggle="' + e.id + '"' : "")
