@@ -940,15 +940,15 @@
          gate would need a server-side check, which this static
          page does not have. */
       var USER_PASSWORDS = {
-        "Mandy Chung": "", "Calvin Ko": "", "Esther": "", "Sincere": "", "Timothy Ko": "",
+        "Mandy Chung": "adminadmin", "Calvin Ko": "adminadmin", "Esther": "", "Sincere": "", "Timothy Ko": "adminadmin",
         "Samuel Li": "", "Ethan Chan": "", "Lukas Tsui": "", "Jeffrey Tsui": "", "Daniel": "",
-        "Anthony": "", "Leo": "", "Justin Wong": "", "Enoch Chan": "", "Timothy Chan": "",
-        "Titus": "", "Acacia": "", "Anya Li": "", "Joelle Chan": "", "Ingrid": "",
+        "Anthony": "adminadmin", "Leo": "", "Justin Wong": "", "Enoch Chan": "", "Timothy Chan": "",
+        "Titus": "", "Acacia": "adminadmin", "Anya Li": "", "Joelle Chan": "", "Ingrid": "",
         "Harmony Chan": "", "Charity Chan": "", "Gordon": "", "Nicole": "", "Justin Chan": "",
-        "Nanci": "", "Tommy": "", "Christine": "", "Rute": "", "Elyse": "",
+        "Nanci": "", "Tommy": "", "Christine": "", "Rute": "adminadmin", "Elyse": "",
         "Pearl": "", "Aimee Yau": "", "Praylee": "", "Yanmi": "", "Danny": "",
-        "Lilian": "", "Chris": "", "Kelly": "", "Winly": "", "Osborn": "",
-        "Kerry": "", "Kenneth": "", "Aimee Du": ""
+        "Lilian": "", "Chris": "", "Kelly": "", "Winly": "adminadmin", "Osborn": "",
+        "Kerry": "adminadmin", "Kenneth": "", "Aimee Du": ""
       };
       var pendingUser = null;
       /* ================================================================
@@ -1312,7 +1312,7 @@
         rooms: [
           { unit:"Unit 1", type:"2-bedroom", reservationHolder:"Mandy", leader:"Anthony", roomNumber:null, occupants:["Anthony", "Leo", "Justin Wong", "Enoch Chan", "Timothy Chan", "Titus"] },
           { unit:"Unit 2", type:"2-bedroom", reservationHolder:"Timothy", leader:"Timothy Ko", roomNumber:null, occupants:["Timothy Ko", "Samuel Li", "Ethan Chan", "Lukas Tsui", "Jeffrey Tsui", "Daniel"] },
-          { unit:"Unit 3", type:"2-bedroom", reservationHolder:"Anthony", leader:"Winly", roomNumber:null, occupants:["Winly", "Danny", "Chris", "Kelly", "Lilian"] },
+          { unit:"Unit 3", type:"2-bedroom", reservationHolder:"Anthony", leader:"Winly", roomNumber:"P273", occupants:["Winly", "Danny", "Chris", "Kelly", "Lilian"] },
           { unit:"Unit 4", type:"2-bedroom", reservationHolder:"Acacia", leader:"Acacia", roomNumber:null, occupants:["Acacia", "Anya Li", "Joelle Chan", "Ingrid", "Harmony Chan", "Charity Chan"] },
           { unit:"Unit 5", type:"2-bedroom", reservationHolder:"Calvin", leader:"Gordon", roomNumber:null, occupants:["Gordon", "Nicole", "Justin Chan", "Nanci", "Tommy", "Christine"] },
           { unit:"Unit 6", type:"2-bedroom", reservationHolder:"Rute", leader:"Rute", roomNumber:null, occupants:["Rute", "Elyse", "Pearl", "Aimee Yau", "Praylee", "Yanmi"] },
