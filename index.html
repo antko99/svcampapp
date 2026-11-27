@@ -105,7 +105,7 @@
 
       /* ---------- Hard gate: no user picked ---------- */
       body.gated .tabbar, body.gated .idbar, body.gated #view-schedule, body.gated #view-assign,
-      body.gated #view-comp, body.gated #view-tracker, body.gated #view-rooms, body.gated #view-info{ display:none !important;}
+      body.gated #view-comp, body.gated #view-race, body.gated #view-tracker, body.gated #view-rooms, body.gated #view-info{ display:none !important;}
       .idbar .who{ font-weight:400; color:var(--muted); font-size:0.6934rem;}
       .idbar .who b{ color:var(--ink-soft); font-weight:400;}
       .idbar .linkbtn, .idbar .pickbtn{ border:0; background:transparent; font:inherit; font-weight:400; font-size:0.6934rem;
@@ -145,17 +145,25 @@
       .tabbar button:nth-child(1){ --tab-dot:var(--accent);}
       .tabbar button:nth-child(2){ --tab-dot:var(--sage);}
       .tabbar button:nth-child(3){ --tab-dot:var(--mustard);}
-      .tabbar button:nth-child(4){ --tab-dot:var(--sage);}
-      .tabbar button:nth-child(5){ --tab-dot:var(--accent);}
-      .tabbar button:nth-child(6){ --tab-dot:var(--mustard);}
+      .tabbar button:nth-child(4){ --tab-dot:var(--rose);}
+      .tabbar button:nth-child(5){ --tab-dot:var(--sage);}
+      .tabbar button:nth-child(6){ --tab-dot:var(--accent);}
+      .tabbar button:nth-child(7){ --tab-dot:var(--mustard);}
+      /* Race tab: warm rose dot, pinned by id so its position
+         never recolours the other tabs. */
+      #tab-race{ --tab-dot:var(--rose);}
       /* Voting Tracker tab (conditionally present): teal dot,
          pinned by id so inserting it never recolours the others. */
       #tab-tracker{ --tab-dot:var(--teal);}
       /* Competition LIVE (Sat 4:30–5:30 PM): the Competition tab
          flashes gently with stars while the competition runs. */
       .tabbar button.comp-live{ animation:compFlash 1.15s ease-in-out infinite; font-weight:400;}
+      /* Amazing Race LIVE (Sat 2:00-4:00 PM): the Race tab flashes
+         with stars exactly like the Competition tab does. */
+      .tabbar button.race-live{ animation:compFlash 1.15s ease-in-out infinite; font-weight:400;}
+      .race-live-line{ background:var(--now-fill); color:#FFF8F0; border-radius:var(--radius); padding:9.41px 12.15px; text-align:center; margin-top:8.07px; box-shadow:var(--shadow-lg); font-size:1.0228rem; font-weight:900;}
       @keyframes compFlash{ 0%,100%{ background:var(--mustard-bg); color:var(--mustard-strong); box-shadow:inset 0 0 0 2px var(--mustard-line);} 50%{ background:var(--accent); color:#FFF7EA; box-shadow:inset 0 0 0 2px var(--accent);} }
-      @media (prefers-reduced-motion: reduce){ .tabbar button.comp-live{ animation:none; background:var(--mustard-bg); color:var(--mustard-strong); box-shadow:inset 0 0 0 2px var(--mustard-line);} }
+      @media (prefers-reduced-motion: reduce){ .tabbar button.comp-live{ animation:none; background:var(--mustard-bg); color:var(--mustard-strong); box-shadow:inset 0 0 0 2px var(--mustard-line);} .tabbar button.race-live{ animation:none; background:var(--mustard-bg); color:var(--mustard-strong); box-shadow:inset 0 0 0 2px var(--mustard-line);} }
       @media (max-width:640px){ .tabbar{ flex-wrap:wrap; border-radius:19.44px;} .tabbar button{ flex:1 1 30%;} }
       .tabbar button[aria-selected="true"]{ background:var(--accent); color:#FFF7EA;}
       .tabbar button[aria-selected="true"]::before{ background:#FFF7EA;}
@@ -206,6 +214,7 @@
       .tag.youth{ background:var(--youth-bg); color:var(--youth);}
       .tag.parents{ background:var(--parents-bg); color:var(--parents);}
       .tag.shared{ background:var(--surface-3); color:var(--ink-soft);}
+      .tag.coord{ background:var(--accent-soft); color:var(--accent-strong);}
 
       .chip{ display:inline-flex; align-items:center; gap:4.03px 4.86px; background:var(--mine-bg); color:var(--mine-ink);
         border:1.5px solid var(--mine-line); border-radius:809.19px; padding:3.36px 9.72px; font-size:0.7107rem; font-weight:400; margin-top:7.4px;}
@@ -301,6 +310,37 @@
       .ev.is-selected{ outline:3px solid var(--amber); outline-offset:1px;}
       .ev .now-flag{ font-size:0.6067rem; font-weight:400; letter-spacing:.07em; text-transform:uppercase; color:var(--accent-strong); display:block; margin-bottom:1.34px;}
       .ev .mine-flag{ font-size:0.6067rem; font-weight:400; letter-spacing:.07em; text-transform:uppercase; color:var(--mine-ink); display:block; margin-bottom:1.34px;}
+      /* ---------- Coordinators: meal responsibility panels ----------
+         Only rendered for the six coordinators: meal-duty events on
+         the Schedule become tappable and expand a panel underneath
+         naming who prepares and who cleans up for that meal. */
+      .ev.is-tappable{ cursor:pointer;}
+      /* The expander is a bare chevron at the RIGHT edge of the
+         bubble — no text label (Anthony, 2026-11-26 eve). It
+         flips to point up while the panel is open. */
+      .meal-chev{ flex:none; align-self:center; display:inline-flex; align-items:center; justify-content:center; color:var(--accent-strong);}
+      .meal-chev svg{ width:16px; height:16px; flex:none; transition:transform .18s ease;}
+      .ev.is-open .meal-chev svg{ transform:rotate(180deg);}
+      @media (prefers-reduced-motion: reduce){ .meal-chev svg{ transition:none;} }
+      .meal-panel{ background:var(--surface-2); border:1px solid var(--line); border-radius:11.34px; padding:7.4px 11.34px; margin:0 0 5.38px;}
+      .meal-panel[hidden]{ display:none;}
+      #view-schedule .meal-panel{ padding:6.05px 9.72px; margin:0 0 2.69px;}
+      .meal-duty + .meal-duty{ margin-top:6.72px; padding-top:6.72px; border-top:1px dashed var(--line);}
+      .meal-duty-head{ margin:0; font-size:0.8234rem; line-height:1.4; color:var(--ink);}
+      .meal-duty-label{ font-weight:900; color:var(--accent-strong);}
+      .meal-duty-groups{ font-weight:900;}
+      .meal-people{ margin:1.34px 0 0; font-size:0.7974rem; font-weight:400; color:var(--ink-soft); line-height:1.5;}
+      /* Schedule expander only: responsible members one per line,
+         in a smaller font than the bubble text around them. */
+      .meal-people-rows{ list-style:none; margin:2.02px 0 0; padding:0; font-size:0.7276rem; font-weight:400; color:var(--ink-soft); line-height:1.5;}
+      .meal-people-rows li{ margin:0; padding:0;}
+      /* Assignments "All meal duties" cards (coordinators only) */
+      .meal-duty-card{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:8.07px 11.34px; margin-top:6.72px;}
+      .meal-duty-card h3{ font-size:0.9534rem; font-weight:900; margin:0;}
+      .meal-duty-card .meal-when{ color:var(--muted); font-weight:400; font-size:0.7627rem; margin:1.34px 0 6.05px;}
+      .meal-status{ display:inline-block; font-size:0.624rem; font-weight:400; letter-spacing:.06em; text-transform:uppercase; padding:2.02px 7.29px; border-radius:809.19px; vertical-align:2px; margin-left:6.48px;}
+      .meal-status.is-now{ background:var(--now-fill); color:#FFF8F0;}
+      .meal-status.is-next{ background:var(--mustard-bg); color:var(--mustard-strong); border:1px solid var(--mustard-line);}
       .ev-list{ display:block;}
       .flash{ animation:flash 1.6s ease;}
       @keyframes flash{ 0%,60%{ background:var(--accent-soft) } 100%{ background:var(--surface) } }
@@ -788,6 +828,7 @@
           <button role="tab" id="tab-schedule" aria-selected="true" data-view="schedule">Schedule</button>
           <button role="tab" id="tab-assign" aria-selected="false" data-view="assign">Assignments</button>
           <button role="tab" id="tab-comp" aria-selected="false" data-view="comp">Competition</button>
+          <button role="tab" id="tab-race" aria-selected="false" data-view="race">Amazing Race</button>
           <button role="tab" id="tab-tracker" aria-selected="false" data-view="tracker" hidden>Voting Tracker</button>
           <button role="tab" id="tab-rooms" aria-selected="false" data-view="rooms">Rooms</button>
           <button role="tab" id="tab-info" aria-selected="false" data-view="info">Info</button>
@@ -838,6 +879,11 @@
       <!-- ============ COMPETITION VIEW ============ -->
       <section id="view-comp" role="tabpanel" aria-labelledby="tab-comp" hidden>
         <div id="compArea"></div>
+      </section>
+
+      <!-- ============ AMAZING RACE VIEW ============ -->
+      <section id="view-race" role="tabpanel" aria-labelledby="tab-race" hidden>
+        <div id="raceArea"></div>
       </section>
 
       <!-- ============ VOTING TRACKER VIEW ============ -->
@@ -916,8 +962,8 @@
          sub group leader). Assignments = group duties everyone shares
          (the meal cook / clean-up table, keyed by sub group); they live
          ONLY in the Assignments tab and in the per-day / today
-         assignment sections — never in Responsibilities. Every sub
-         group has a leader — see subGroupLeaders.
+         assignment sections — never in Responsibilities. Every group
+         has a leader — see the leader fields in assignmentGroups.
          NO-MERGE RULE (Anthony, 2026-11-23): meal Coordination
          (a Responsibility) and a group Prepare / Clean up
          Assignment are DIFFERENT things and always show as
@@ -940,7 +986,7 @@
           welcome: "Welcome to SV's 2026 family camp.",
           location: "Angels Camp",
           timezone: "America/Los_Angeles",
-          lastSyncedFromSheet: "2026-11-23 ~19:59 (schedule edits; room leaders Winly/Kerry; Sat Dinner Prepare -> Calvin & Mandy & children; Cooking Competition tab added)",
+          lastSyncedFromSheet: "2026-11-26 eve (Meal Duties re-read: youth groups merged into single Youth Bros / Youth Sis, seven groups with leaders; breakfast duties add the Children party; coordinator schedule expander is now a plain chevron; later Nov 26 eve: group coordinators removed — leaders only, Timothy Ko / Acacia / Anthony / Rute are members of their groups; Moms rosters swapped on re-read (Moms 1 = Kerry's group, Moms 2 = Winly's group); race Game masters renamed Station masters)",
           sourceSheet: "Nov 2026 Angels English Camp",
           sourceSheetId: "1PD3QML2nMJ9R26p0Ms3J-a2RauyLZbLt1J96EXllCGA"
         },
@@ -949,66 +995,108 @@
            exists, else the regular name. Display rule: displayName is
            used EVERYWHERE a name is shown. Track rule: Category Parent
            -> Parents track (even when Group is English); everyone else
-           -> English track. Sub Group (Mom / Dad / Adult / Youth Brother
-           / Youth Sister) drives the meal cook & clean-up ASSIGNMENTS —
-           see responsibilities.mealGroupDuties. Each sub group has a
-           leader (subGroupLeaders below, from People tab columns G/H);
-           being a sub group leader is itself a Responsibility. */
+           -> English track. subGroup holds the person's assignment
+           group (one of the seven in assignmentGroups below; null
+           only for Mandy Chung and Calvin Ko, who are in no meal
+           group) and drives the meal cook & clean-up ASSIGNMENTS —
+           see responsibilities.mealGroupDuties. Each group has a
+           leader (its leader field in assignmentGroups); leaders
+           are members of their group. */
         people: [
-          { name:"Mandy Chung", preferredName:null, displayName:"Mandy Chung", category:"Parent", group:"English", defaultTrack:"Parents", subGroup:"Mom" },
-          { name:"Calvin Ko", preferredName:null, displayName:"Calvin Ko", category:"Parent", group:"Chinese", defaultTrack:"Parents", subGroup:"Dad" },
-          { name:"Esther", preferredName:null, displayName:"Esther", category:"Adult", group:"English", defaultTrack:"English", subGroup:"Adult" },
-          { name:"Sincere", preferredName:null, displayName:"Sincere", category:"Adult", group:"English", defaultTrack:"English", subGroup:"Adult" },
-          { name:"Timothy Ko", preferredName:null, displayName:"Timothy Ko", category:"Youth", group:"English", defaultTrack:"English", subGroup:"Youth Brother" },
-          { name:"Samuel Li", preferredName:null, displayName:"Samuel Li", category:"Youth", group:"English", defaultTrack:"English", subGroup:"Youth Brother" },
-          { name:"Ethan Chan", preferredName:null, displayName:"Ethan Chan", category:"Youth", group:"English", defaultTrack:"English", subGroup:"Youth Brother" },
-          { name:"Lukas Tsui", preferredName:null, displayName:"Lukas Tsui", category:"Youth", group:"English", defaultTrack:"English", subGroup:"Youth Brother" },
-          { name:"Jeffrey Tsui", preferredName:null, displayName:"Jeffrey Tsui", category:"Youth", group:"English", defaultTrack:"English", subGroup:"Youth Brother" },
-          { name:"Yingxu Zhang", preferredName:"Daniel", displayName:"Daniel", category:"Youth", group:"English", defaultTrack:"English", subGroup:"Youth Brother" },
-          { name:"Anthony", preferredName:null, displayName:"Anthony", category:"Adult", group:"English", defaultTrack:"English", subGroup:"Adult" },
-          { name:"Fai", preferredName:"Leo", displayName:"Leo", category:"Parent", group:"Chinese", defaultTrack:"Parents", subGroup:"Dad" },
-          { name:"Justin Wong", preferredName:null, displayName:"Justin Wong", category:"Adult", group:"English", defaultTrack:"English", subGroup:"Adult" },
-          { name:"Enoch Chan", preferredName:null, displayName:"Enoch Chan", category:"Youth", group:"English", defaultTrack:"English", subGroup:"Youth Brother" },
-          { name:"Timothy Chan", preferredName:null, displayName:"Timothy Chan", category:"Children", group:"English", defaultTrack:"English", subGroup:"Youth Brother" },
-          { name:"Titus", preferredName:null, displayName:"Titus", category:"Children", group:"English", defaultTrack:"English", subGroup:"Youth Brother" },
-          { name:"Acacia", preferredName:null, displayName:"Acacia", category:"Youth", group:"English", defaultTrack:"English", subGroup:"Youth Sister" },
-          { name:"Anya Li", preferredName:null, displayName:"Anya Li", category:"Youth", group:"English", defaultTrack:"English", subGroup:"Youth Sister" },
-          { name:"Joelle Chan", preferredName:null, displayName:"Joelle Chan", category:"Youth", group:"English", defaultTrack:"English", subGroup:"Youth Sister" },
-          { name:"Ingrid", preferredName:null, displayName:"Ingrid", category:"Youth", group:"English", defaultTrack:"English", subGroup:"Youth Sister" },
-          { name:"Harmony Chan", preferredName:null, displayName:"Harmony Chan", category:"Youth", group:"English", defaultTrack:"English", subGroup:"Youth Sister" },
-          { name:"Charity Chan", preferredName:null, displayName:"Charity Chan", category:"Youth", group:"English", defaultTrack:"English", subGroup:"Youth Sister" },
-          { name:"Gordon", preferredName:null, displayName:"Gordon", category:"Parent", group:"Chinese", defaultTrack:"Parents", subGroup:"Dad" },
-          { name:"Nicole", preferredName:null, displayName:"Nicole", category:"Parent", group:"Chinese", defaultTrack:"Parents", subGroup:"Mom" },
-          { name:"Justin Chan", preferredName:null, displayName:"Justin Chan", category:"Parent", group:"Chinese", defaultTrack:"Parents", subGroup:"Dad" },
-          { name:"Nanci", preferredName:null, displayName:"Nanci", category:"Parent", group:"Chinese", defaultTrack:"Parents", subGroup:"Mom" },
-          { name:"Tommy", preferredName:null, displayName:"Tommy", category:"Parent", group:"Chinese", defaultTrack:"Parents", subGroup:"Dad" },
-          { name:"Christine", preferredName:null, displayName:"Christine", category:"Parent", group:"Chinese", defaultTrack:"Parents", subGroup:"Mom" },
-          { name:"Rute", preferredName:null, displayName:"Rute", category:"Adult", group:"English", defaultTrack:"English", subGroup:"Adult" },
-          { name:"Elyse", preferredName:null, displayName:"Elyse", category:"Children", group:"English", defaultTrack:"English", subGroup:"Youth Sister" },
-          { name:"Pearl", preferredName:null, displayName:"Pearl", category:"Children", group:"English", defaultTrack:"English", subGroup:"Youth Sister" },
-          { name:"Aimee Yau", preferredName:null, displayName:"Aimee Yau", category:"Children", group:"English", defaultTrack:"English", subGroup:"Youth Sister" },
-          { name:"Praylee", preferredName:null, displayName:"Praylee", category:"Children", group:"English", defaultTrack:"English", subGroup:"Youth Sister" },
-          { name:"Yanmi", preferredName:null, displayName:"Yanmi", category:"Adult", group:"English", defaultTrack:"English", subGroup:"Adult" },
-          { name:"Danny", preferredName:null, displayName:"Danny", category:"Parent", group:"Chinese", defaultTrack:"Parents", subGroup:"Dad" },
-          { name:"Jing Feng", preferredName:"Lilian", displayName:"Lilian", category:"Parent", group:"Chinese", defaultTrack:"Parents", subGroup:"Mom" },
-          { name:"Chris", preferredName:null, displayName:"Chris", category:"Parent", group:"Chinese", defaultTrack:"Parents", subGroup:"Dad" },
-          { name:"Kelly", preferredName:null, displayName:"Kelly", category:"Parent", group:"Chinese", defaultTrack:"Parents", subGroup:"Mom" },
-          { name:"Winly", preferredName:null, displayName:"Winly", category:"Parent", group:"English", defaultTrack:"Parents", subGroup:"Mom" },
-          { name:"Osborn", preferredName:null, displayName:"Osborn", category:"Parent", group:"Chinese", defaultTrack:"Parents", subGroup:"Dad" },
-          { name:"Kerry", preferredName:null, displayName:"Kerry", category:"Parent", group:"English", defaultTrack:"Parents", subGroup:"Mom" },
-          { name:"Kenneth", preferredName:null, displayName:"Kenneth", category:"Parent", group:"Chinese", defaultTrack:"Parents", subGroup:"Dad" },
-          { name:"Aimee Du", preferredName:null, displayName:"Aimee Du", category:"Parent", group:"Chinese", defaultTrack:"Parents", subGroup:"Mom" }
+          { name:"Mandy Chung", preferredName:null, displayName:"Mandy Chung", category:"Parent", group:"English", defaultTrack:"Parents", subGroup:null },
+          { name:"Calvin Ko", preferredName:null, displayName:"Calvin Ko", category:"Parent", group:"Chinese", defaultTrack:"Parents", subGroup:null },
+          { name:"Esther", preferredName:null, displayName:"Esther", category:"Adult", group:"English", defaultTrack:"English", subGroup:"Adults" },
+          { name:"Sincere", preferredName:null, displayName:"Sincere", category:"Adult", group:"English", defaultTrack:"English", subGroup:"Adults" },
+          { name:"Timothy Ko", preferredName:null, displayName:"Timothy Ko", category:"Youth", group:"English", defaultTrack:"English", subGroup:"Youth Bros" },
+          { name:"Samuel Li", preferredName:null, displayName:"Samuel Li", category:"Youth", group:"English", defaultTrack:"English", subGroup:"Youth Bros" },
+          { name:"Ethan Chan", preferredName:null, displayName:"Ethan Chan", category:"Youth", group:"English", defaultTrack:"English", subGroup:"Youth Bros" },
+          { name:"Lukas Tsui", preferredName:null, displayName:"Lukas Tsui", category:"Youth", group:"English", defaultTrack:"English", subGroup:"Youth Bros" },
+          { name:"Jeffrey Tsui", preferredName:null, displayName:"Jeffrey Tsui", category:"Youth", group:"English", defaultTrack:"English", subGroup:"Youth Bros" },
+          { name:"Yingxu Zhang", preferredName:"Daniel", displayName:"Daniel", category:"Youth", group:"English", defaultTrack:"English", subGroup:"Youth Bros" },
+          { name:"Anthony", preferredName:null, displayName:"Anthony", category:"Adult", group:"English", defaultTrack:"English", subGroup:"Adults" },
+          { name:"Fai", preferredName:"Leo", displayName:"Leo", category:"Parent", group:"Chinese", defaultTrack:"Parents", subGroup:"Dads 1" },
+          { name:"Justin Wong", preferredName:null, displayName:"Justin Wong", category:"Adult", group:"English", defaultTrack:"English", subGroup:"Adults" },
+          { name:"Enoch Chan", preferredName:null, displayName:"Enoch Chan", category:"Youth", group:"English", defaultTrack:"English", subGroup:"Youth Bros" },
+          { name:"Timothy Chan", preferredName:null, displayName:"Timothy Chan", category:"Children", group:"English", defaultTrack:"English", subGroup:"Youth Bros" },
+          { name:"Titus", preferredName:null, displayName:"Titus", category:"Children", group:"English", defaultTrack:"English", subGroup:"Youth Bros" },
+          { name:"Acacia", preferredName:null, displayName:"Acacia", category:"Youth", group:"English", defaultTrack:"English", subGroup:"Youth Sis" },
+          { name:"Anya Li", preferredName:null, displayName:"Anya Li", category:"Youth", group:"English", defaultTrack:"English", subGroup:"Youth Sis" },
+          { name:"Joelle Chan", preferredName:null, displayName:"Joelle Chan", category:"Youth", group:"English", defaultTrack:"English", subGroup:"Youth Sis" },
+          { name:"Ingrid", preferredName:null, displayName:"Ingrid", category:"Youth", group:"English", defaultTrack:"English", subGroup:"Youth Sis" },
+          { name:"Harmony Chan", preferredName:null, displayName:"Harmony Chan", category:"Youth", group:"English", defaultTrack:"English", subGroup:"Youth Sis" },
+          { name:"Charity Chan", preferredName:null, displayName:"Charity Chan", category:"Youth", group:"English", defaultTrack:"English", subGroup:"Youth Sis" },
+          { name:"Gordon", preferredName:null, displayName:"Gordon", category:"Parent", group:"Chinese", defaultTrack:"Parents", subGroup:"Dads 1" },
+          { name:"Nicole", preferredName:null, displayName:"Nicole", category:"Parent", group:"Chinese", defaultTrack:"Parents", subGroup:"Moms 1" },
+          { name:"Justin Chan", preferredName:null, displayName:"Justin Chan", category:"Parent", group:"Chinese", defaultTrack:"Parents", subGroup:"Dads 2" },
+          { name:"Nanci", preferredName:null, displayName:"Nanci", category:"Parent", group:"Chinese", defaultTrack:"Parents", subGroup:"Moms 1" },
+          { name:"Tommy", preferredName:null, displayName:"Tommy", category:"Parent", group:"Chinese", defaultTrack:"Parents", subGroup:"Dads 2" },
+          { name:"Christine", preferredName:null, displayName:"Christine", category:"Parent", group:"Chinese", defaultTrack:"Parents", subGroup:"Moms 2" },
+          { name:"Rute", preferredName:null, displayName:"Rute", category:"Adult", group:"English", defaultTrack:"English", subGroup:"Adults" },
+          { name:"Elyse", preferredName:null, displayName:"Elyse", category:"Children", group:"English", defaultTrack:"English", subGroup:"Youth Sis" },
+          { name:"Pearl", preferredName:null, displayName:"Pearl", category:"Children", group:"English", defaultTrack:"English", subGroup:"Youth Sis" },
+          { name:"Aimee Yau", preferredName:null, displayName:"Aimee Yau", category:"Children", group:"English", defaultTrack:"English", subGroup:"Youth Sis" },
+          { name:"Praylee", preferredName:null, displayName:"Praylee", category:"Children", group:"English", defaultTrack:"English", subGroup:"Youth Sis" },
+          { name:"Yanmi", preferredName:null, displayName:"Yanmi", category:"Adult", group:"English", defaultTrack:"English", subGroup:"Adults" },
+          { name:"Danny", preferredName:null, displayName:"Danny", category:"Parent", group:"Chinese", defaultTrack:"Parents", subGroup:"Dads 2" },
+          { name:"Jing Feng", preferredName:"Lilian", displayName:"Lilian", category:"Parent", group:"Chinese", defaultTrack:"Parents", subGroup:"Moms 2" },
+          { name:"Chris", preferredName:null, displayName:"Chris", category:"Parent", group:"Chinese", defaultTrack:"Parents", subGroup:"Dads 1" },
+          { name:"Kelly", preferredName:null, displayName:"Kelly", category:"Parent", group:"Chinese", defaultTrack:"Parents", subGroup:"Moms 2" },
+          { name:"Winly", preferredName:null, displayName:"Winly", category:"Parent", group:"English", defaultTrack:"Parents", subGroup:"Moms 2" },
+          { name:"Osborn", preferredName:null, displayName:"Osborn", category:"Parent", group:"Chinese", defaultTrack:"Parents", subGroup:"Dads 2" },
+          { name:"Kerry", preferredName:null, displayName:"Kerry", category:"Parent", group:"English", defaultTrack:"Parents", subGroup:"Moms 1" },
+          { name:"Kenneth", preferredName:null, displayName:"Kenneth", category:"Parent", group:"Chinese", defaultTrack:"Parents", subGroup:"Dads 1" },
+          { name:"Aimee Du", preferredName:null, displayName:"Aimee Du", category:"Parent", group:"Chinese", defaultTrack:"Parents", subGroup:"Moms 1" }
         ],
-        /* Sub group leaders from the sheet (People tab columns G/H),
-           keyed by PLURAL sub group label, values are displayNames.
-           Adults has co-leaders. Derived per person from their
-           subGroup — no per-person leader field. */
-        subGroupLeaders: {
-          "Dads": ["Calvin Ko"],
-          "Moms": ["Mandy Chung"],
-          "Youth Brothers": ["Timothy Ko"],
-          "Youth Sisters": ["Acacia"],
-          "Adults": ["Anthony", "Rute"]
+        /* Group LEADERS live on each group's leader field in
+           assignmentGroups below (Anthony, 2026-11-26 eve, leaders-
+           only model): leaders are MEMBERS of their group, shown
+           ★ + bold at the top of the member list on group cards.
+           Moms / Dads leaders are the first-listed person in the
+           sheet's group list (Kerry, Winly, Gordon, Danny).
+           Timothy Ko leads Youth Bros, Acacia leads Youth Sis,
+           and Anthony & Rute co-lead Adults — all as members.
+           There are NO group coordinators (removed Nov 26 eve):
+           Mandy Chung and Calvin Ko are in no meal group. The six
+           camp coordinators (Anthony, Rute, Mandy, Calvin,
+           Timothy, Acacia) keep only the separate camp-level
+           features (All meal duties section, schedule meal
+           expander) — that role no longer touches groups.
+           Kept as an empty map so the old leader lookups simply
+           find no one; starring derives from the leader fields
+           in assignmentGroups. */
+        subGroupLeaders: {},
+        /* Assignment groups (Anthony, 2026-11-26; re-read from
+           the sheet's Meal Duties tab 2026-11-26 eve; leaders-only
+           model Nov 26 eve): SEVEN groups — the youth groups are
+           single whole groups now (Youth Bros, Youth Sis), no
+           more numbered halves. Everyone except Mandy Chung and
+           Calvin Ko is in exactly one group. Members are in sheet
+           order (leaders first) and are shown exactly in this
+           order. A person's subGroup holds their group name
+           directly. There is no coordinator field: groups have
+           leaders only, and every leader is a member. */
+        assignmentGroups: [
+          { name:"Moms 1", leader:"Kerry", members:["Kerry", "Aimee Du", "Nicole", "Nanci"] },
+          { name:"Moms 2", leader:"Winly", members:["Winly", "Christine", "Kelly", "Lilian"] },
+          { name:"Dads 1", leader:"Gordon", members:["Gordon", "Chris", "Kenneth", "Leo"] },
+          { name:"Dads 2", leader:"Danny", members:["Danny", "Osborn", "Justin Chan", "Tommy"] },
+          { name:"Youth Bros", leader:"Timothy Ko", members:["Timothy Ko", "Samuel Li", "Ethan Chan", "Jeffrey Tsui", "Timothy Chan", "Enoch Chan", "Lukas Tsui", "Daniel", "Titus"] },
+          { name:"Youth Sis", leader:"Acacia", members:["Acacia", "Harmony Chan", "Joelle Chan", "Ingrid", "Elyse", "Pearl", "Anya Li", "Charity Chan", "Aimee Yau", "Praylee"] },
+          { name:"Adults", leader:["Anthony", "Rute"], members:["Anthony", "Rute", "Esther", "Sincere", "Justin Wong", "Yanmi"] }
+        ],
+        /* Amazing Race (Saturday 2:00 PM): six race groups plus
+           the station masters. Every camper is either a racer in one
+           group or a station master. Members in sheet order. */
+        amazingRace: {
+          groups: [
+            { name:"Group 1", members:["Leo", "Gordon", "Kelly", "Daniel", "Harmony Chan", "Aimee Yau", "Sincere"] },
+            { name:"Group 2", members:["Justin Chan", "Christine", "Lilian", "Samuel Li", "Titus", "Anthony"] },
+            { name:"Group 3", members:["Danny", "Kerry", "Aimee Du", "Ethan Chan", "Anya Li", "Yanmi"] },
+            { name:"Group 4", members:["Chris", "Winly", "Enoch Chan", "Timothy Chan", "Ingrid", "Elyse", "Esther"] },
+            { name:"Group 5", members:["Tommy", "Kenneth", "Nanci", "Lukas Tsui", "Joelle Chan", "Praylee", "Rute"] },
+            { name:"Group 6", members:["Osborn", "Nicole", "Jeffrey Tsui", "Charity Chan", "Pearl", "Justin Wong"] }
+          ],
+          stationMasters: ["Calvin Ko", "Mandy Chung", "Timothy Ko", "Acacia"]
         },
         generalInfo: {
           dates: { start: "2026-11-27", end: "2026-11-29" },
@@ -1154,12 +1242,26 @@
              (prepareJump); breakfast Prepare is implied beforehand, so
              it stays at the 9:00 AM breakfast itself; ALL clean up is
              timed during the meal itself (cleanupJump = the meal). */
+          /* Duties keyed by the seven assignment groups
+             (prepareGroups / cleanupGroups; table re-read from
+             the sheet's Meal Duties tab 2026-11-26 eve). Where
+             two parties share one duty (the breakfasts), both are
+             listed. "Children" is a named party of its own: the
+             six Children-category campers (Timothy Chan, Titus,
+             Elyse, Pearl, Aimee Yau, Praylee) — a child on a
+             "Children" duty sees it labelled "Children", and the
+             Youth Sis children hold BOTH Saturday Breakfast
+             duties (Prepare as Children, Clean up as Youth Sis).
+             Display stays purely personal: each person only ever
+             sees their OWN party name on their own assignment —
+             never the other party sharing the duty. Timings
+             (jumps) are unchanged. */
           mealGroupDuties: [
-            { meal:"Friday Dinner", prepareGroup:"Youth Sisters", cleanupGroup:"Youth Brothers", prepareJump:"fri-group", cleanupJump:"fri-dinner", jump:"fri-dinner" },
-            { meal:"Saturday Breakfast", prepareGroup:"Dads", cleanupGroup:"Moms", prepareJump:"sat-e-breakfast", cleanupJump:"sat-e-breakfast", jump:"sat-e-breakfast" },
-            { meal:"Saturday Lunch", prepareGroup:"Youth Brothers", cleanupGroup:"Adults", prepareJump:"sat-e-preplunch", cleanupJump:"sat-e-lunch", jump:"sat-e-lunch" },
-            { meal:"Saturday Dinner", prepareGroup:null, prepareLabel:"Calvin & Mandy & Anthony & Rute & Timothy & Acacia & children", preparePeople:["Calvin Ko", "Mandy Chung", "Anthony", "Rute", "Timothy Ko", "Acacia", "Timothy Chan", "Titus", "Elyse", "Pearl", "Aimee Yau", "Praylee"], cleanupGroup:"Youth Sisters", prepareJump:"sat-e-comp", cleanupJump:"sat-e-dinner", jump:"sat-e-dinner" },
-            { meal:"Sunday Breakfast", prepareGroup:"Moms", cleanupGroup:"Dads", prepareJump:"sun-breakfast", cleanupJump:"sun-breakfast", jump:"sun-breakfast" }
+            { meal:"Friday Dinner", prepareGroups:["Youth Sis"], cleanupGroups:["Youth Bros"], prepareJump:"fri-group", cleanupJump:"fri-dinner", jump:"fri-dinner" },
+            { meal:"Saturday Breakfast", prepareGroups:["Moms 1", "Children"], cleanupGroups:["Moms 2", "Youth Sis"], prepareJump:"sat-e-breakfast", cleanupJump:"sat-e-breakfast", jump:"sat-e-breakfast" },
+            { meal:"Saturday Lunch", prepareGroups:["Youth Bros"], cleanupGroups:["Adults"], prepareJump:"sat-e-preplunch", cleanupJump:"sat-e-lunch", jump:"sat-e-lunch" },
+            { meal:"Saturday Dinner", prepareGroups:[], prepareLabel:"Calvin & Mandy & Anthony & Rute & Timothy & Acacia & children", preparePeople:["Calvin Ko", "Mandy Chung", "Anthony", "Rute", "Timothy Ko", "Acacia", "Timothy Chan", "Titus", "Elyse", "Pearl", "Aimee Yau", "Praylee"], cleanupGroups:["Youth Sis"], prepareJump:"sat-e-comp", cleanupJump:"sat-e-dinner", jump:"sat-e-dinner" },
+            { meal:"Sunday Breakfast", prepareGroups:["Dads 1", "Children"], cleanupGroups:["Dads 2", "Youth Bros"], prepareJump:"sun-breakfast", cleanupJump:"sun-breakfast", jump:"sun-breakfast" }
           ],
           meetingItems: [
             { item:"Bread and Cup", who:"Winly" },
@@ -1207,10 +1309,10 @@
           { driver:"Justin Wong", car:"Grey Tesla Model 3" },
           { driver:"Yanmi", car:"Grey Corolla" },
           { driver:"Leo", car:"Black Tesla Model Y" },
-          { driver:"Osborn", car:null },
+          { driver:"Osborn", car:"Blue Tesla Model Y" },
           { driver:"Tommy", car:"Black Tesla Model Y" },
           { driver:"Chris", car:"Blue Toyota Grand Highlander" },
-          { driver:"Justin Chan", car:null }
+          { driver:"Justin Chan", car:"Black Tesla Model Y" }
         ],
         /* Cooking Competition (sheet tab "Dessert Competition", added
            2026-11-23 evening): Saturday teams — name, dish (some teams
@@ -1350,7 +1452,7 @@
       function saveTrack(t){
         try { localStorage.setItem(LS_TRACK_KEY, t); } catch(e){}
       }
-      var state = { view:"schedule", track:"english", day:"0", selected:null, user:null, roomsMode:"default", foundUnit:null, groupsOpen:false, otherTeamsOpen:false };
+      var state = { view:"schedule", track:"english", day:"0", selected:null, user:null, roomsMode:"default", foundUnit:null, groupsOpen:false, raceOpen:false, otherTeamsOpen:false, mealOpen:{}, allMealsOpen:false };
 
       function loadUser(){
         try {
@@ -1399,11 +1501,44 @@
         return false;
       }
       function isMine(ev){ return !!(ev.duty && state.user && whoMatches(ev.duty.who, state.user)); }
-      /* Sub groups (People tab): singular on the person ("Mom"), plural
-         in the Meals cook/cleanup table and on meal events' foodGroup
-         ("Moms"). */
-      var SUBGROUP_PLURAL = { "Mom":"Moms", "Dad":"Dads", "Adult":"Adults", "Youth Brother":"Youth Brothers", "Youth Sister":"Youth Sisters" };
-      function subGroupPlural(person){ return person ? (SUBGROUP_PLURAL[person.subGroup] || null) : null; }
+      /* Assignment groups (Anthony, 2026-11-26): a person's
+         subGroup now holds their assignment-group name directly
+         ("Moms 1", "Youth Sis", "Adults", …), or null for Mandy
+         Chung and Calvin Ko, who are in no meal group. The helper
+         keeps its historical name; it simply returns that group
+         name. */
+      function subGroupPlural(person){ return person ? (person.subGroup || null) : null; }
+      /* The party label a person sees for one side of a meal
+         duty: their own group name when their group is on the
+         duty; else "Children" when the duty names the children
+         as a party and the viewer is one of the six children;
+         else null. A person only ever sees their OWN party —
+         never the other parties sharing the duty. */
+      function dutyPartyLabel(groups, person){
+        if (!person || !groups || !groups.length) return null;
+        var grp = person.subGroup || null;
+        if (grp && groups.indexOf(grp) > -1) return grp;
+        if (groups.indexOf("Children") > -1 && person.category === "Children") return "Children";
+        return null;
+      }
+      /* Amazing Race lookup: the signed-in person's race label —
+         "Group 1".."Group 6" for a racer, "Station master" for a
+         station master, null when they are in neither list. */
+      function raceAssignmentLabel(person){
+        if (!person) return null;
+        var ar = CAMP_DATA.amazingRace || {};
+        if ((ar.stationMasters || []).indexOf(person.display) > -1) return "Station master";
+        var hit = null;
+        (ar.groups || []).forEach(function(g){ if (g.members.indexOf(person.display) > -1) hit = g.name; });
+        return hit;
+      }
+      /* The race card title for a person: their "Group N" card, or
+         the "Station masters" card for a station master. */
+      function raceCardTitle(person){
+        var lbl = raceAssignmentLabel(person);
+        if (!lbl) return null;
+        return lbl === "Station master" ? "Station masters" : lbl;
+      }
       /* Sub group leaders (CAMP_DATA.subGroupLeaders, keyed by plural
          group label, displayNames). Adults has co-leaders. */
       function leadersForGroup(plural){
@@ -1422,37 +1557,54 @@
         return leadersForGroup(subGroupPlural(person)).indexOf(person.display) > -1;
       }
       /* The signed-in person's ASSIGNMENTS: group meal duties from the
-         Meals cook/cleanup table, derived from their subGroup. Timed,
-         chronological. Each carries its group and that group's leader.
+         Meals cook/cleanup table, derived from their assignment
+         group, plus their Amazing Race assignment. Timed,
+         chronological. Each carries the viewer's OWN group only.
          Menus are NOT part of assignments and are not shown anywhere
          on the page. */
       function myAssignments(){
         if (!state.user) return [];
         var grp = subGroupPlural(state.user);
-        if (!grp) return [];
         var R = CAMP_DATA.responsibilities, out = [];
         (R.mealGroupDuties || []).forEach(function(x){
           /* Collect EVERY role that applies — a camper can hold
-             both for one meal (a Youth Sister child is in Saturday
-             Dinner's personal Prepare list AND its Clean up group).
-             Saturday Dinner Prepare is not a sub group at all: it
-             belongs to the specific people in preparePeople and is
-             labelled prepareLabel ("Calvin & Mandy & children");
-             it carries no group leader line. */
+             both for one meal (a Youth Sis child is in Saturday
+             Dinner's personal Prepare list AND its Clean up
+             group; the Youth Sis children hold BOTH Saturday
+             Breakfast duties — Prepare as the Children party,
+             Clean up as Youth Sis). Display is purely personal:
+             a role is labelled with the viewer's OWN party only
+             (dutyPartyLabel), even when another party shares the
+             same duty. Saturday Dinner Prepare is not a group at
+             all: it belongs to the specific people in
+             preparePeople (the six camp coordinators are named
+             there personally, whatever their group) and is labelled
+             prepareLabel ("Calvin & Mandy & children"). */
           var roles = [];
-          if (grp === x.prepareGroup) roles.push({ role:"Prepare", label:grp, leader:leaderTextForGroup(grp) });
-          else if (x.preparePeople && x.preparePeople.indexOf(state.user.display) > -1) roles.push({ role:"Prepare", label:x.prepareLabel, leader:null });
-          if (grp === x.cleanupGroup) roles.push({ role:"Clean up", label:grp, leader:leaderTextForGroup(grp) });
+          var prepParty = dutyPartyLabel(x.prepareGroups, state.user);
+          if (prepParty) roles.push({ role:"Prepare", label:prepParty });
+          else if (x.preparePeople && x.preparePeople.indexOf(state.user.display) > -1) roles.push({ role:"Prepare", label:x.prepareLabel });
+          var cleanParty = dutyPartyLabel(x.cleanupGroups, state.user);
+          if (cleanParty) roles.push({ role:"Clean up", label:cleanParty });
           roles.forEach(function(r){
             var jumpId = r.role === "Prepare" ? (x.prepareJump || x.jump) : (x.cleanupJump || x.jump);
             var td = timedDuty("Meals", r.role + " — " + x.meal + " (" + r.label + ")", jumpId);
             if (!td) return;
             td.role = r.role; td.meal = x.meal; td.group = r.label;
-            td.leaderText = r.leader;
-            td.when = DAYS[td.day].full + " \u00b7 " + fmt(td.t) + (r.leader ? " \u00b7 Led by " + r.leader : "");
+            td.when = DAYS[td.day].full + " \u00b7 " + fmt(td.t);
             out.push(td);
           });
         });
+        /* Amazing Race (Saturday 2:00 PM): a racer is assigned to
+           their race group, a station master to the station masters —
+           shown in the same Upcoming / Past lists, timed at the
+           race event, labelled with the viewer's own race role
+           only. */
+        var raceLbl = raceAssignmentLabel(state.user);
+        if (raceLbl) {
+          var tdRace = timedDuty("Amazing Race", "Amazing Race (" + raceLbl + ")", "sat-e-race");
+          if (tdRace) { tdRace.role = "Amazing Race"; tdRace.meal = "Amazing Race"; tdRace.group = raceLbl; out.push(tdRace); }
+        }
         out.sort(function(a, b){ return a.key - b.key; });
         return out;
       }
@@ -1655,23 +1807,40 @@
       };
       function myEventAssignHtml(e){
         if (!state.user || !e) return "";
+        /* Amazing Race events (both Saturday tracks): a racer sees
+           their own race group, a station master sees Station master —
+           same bubble style as the meal-duty bubbles. */
+        if (e.id === "sat-e-race" || e.id === "sat-p-race") {
+          var raceLbl = raceAssignmentLabel(state.user);
+          return raceLbl ? '<span class="chip">' + CHECK_SVG + "Your assignment: Amazing Race (" + raceLbl + ")</span>" : "";
+        }
         var link = EVENT_ASSIGN[e.id];
         if (!link) return "";
         var grp = subGroupPlural(state.user);
-        if (!grp) return "";
         var entry = null;
         (CAMP_DATA.responsibilities.mealGroupDuties || []).forEach(function(x){ if (x.meal === link.meal) entry = x; });
         if (!entry) return "";
+        /* Purely personal: roles are labelled with the viewer's
+           OWN party only (dutyPartyLabel — their group, or
+           "Children" for a child on a Children-party duty), even
+           when another party shares the duty. A viewer with no
+           group (a coordinator) can still hold the named
+           Saturday Dinner Prepare duty via preparePeople. */
         var roles = [];
         function addPrepare(){
-          if (grp === entry.prepareGroup) roles.push("Prepare (" + grp + ")");
+          var lbl = dutyPartyLabel(entry.prepareGroups, state.user);
+          if (lbl) roles.push("Prepare (" + lbl + ")");
           else if (entry.preparePeople && entry.preparePeople.indexOf(state.user.display) > -1) roles.push("Prepare (" + entry.prepareLabel + ")");
         }
+        function addCleanup(){
+          var lbl = dutyPartyLabel(entry.cleanupGroups, state.user);
+          if (lbl) roles.push("Clean up (" + lbl + ")");
+        }
         if (link.kind === "prepare") addPrepare();
-        else if (link.kind === "cleanup") { if (grp === entry.cleanupGroup) roles.push("Clean up (" + grp + ")"); }
+        else if (link.kind === "cleanup") addCleanup();
         else { /* breakfast meal event anchors both roles */
           addPrepare();
-          if (grp === entry.cleanupGroup) roles.push("Clean up (" + grp + ")");
+          addCleanup();
         }
         return roles.map(function(r){
           return '<span class="chip">' + CHECK_SVG + "Your assignment: " + r + "</span>";
@@ -1833,7 +2002,10 @@
         state.selected = null;
         state.roomsMode = "default";
         state.groupsOpen = false;
+        state.raceOpen = false;
         state.otherTeamsOpen = false;
+        state.mealOpen = {};
+        state.allMealsOpen = false;
         state.foundUnit = null;
         state.foundName = null;
         renderHeader();
@@ -1867,6 +2039,7 @@
           document.getElementById("pickNameBtn").addEventListener("click", openPicker);
         }
         updateCompTab();
+        updateRaceTab();
         applyGate();
       }
 
@@ -1982,11 +2155,197 @@
         if (nowKey < endKey) return "current";
         return "past";
       }
+      /* ================= Coordinators: meal responsibility panels =================
+         SCHEDULE TAB ONLY, COORDINATORS ONLY (Anthony, 2026-11-26):
+         the six coordinators — the same six as the competition
+         Coordinators team — can tap any schedule event that carries
+         meal duties (EVENT_ASSIGN: the prep slots, the breakfasts
+         and the meals themselves for Friday dinner, Saturday
+         breakfast / lunch / dinner and Sunday breakfast) to expand
+         a panel directly under the event naming who is responsible
+         for that meal: the Prepare group name(s) AND the actual
+         people in them, then Clean up the same way. This is the
+         coordinators' overview, so it shows the REAL responsible
+         parties — the merged youth groups are single groups now,
+         and a "Children" duty expands to the six children;
+         Saturday Dinner Prepare has no group and lists its twelve
+         named people (preparePeople) under its sheet label. It
+         shows whether or not the coordinator is personally on the
+         duty. Everyone else's schedule is completely unchanged:
+         no chevron, no panel, not tappable. Expansion state is
+         per-event and session-only (state.mealOpen, in memory —
+         never stored), and toggling updates the DOM in place: it
+         never re-renders the schedule, so it never triggers the
+         schedule auto-scroll or moves the page. A coordinator's
+         own assignment bubble on the event is untouched. */
+      var MEAL_COORDINATORS = ["Anthony", "Rute", "Mandy Chung", "Calvin Ko", "Timothy Ko", "Acacia"];
+      var CHEVRON_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg>';
+      function isMealCoordinator(person){
+        return !!(person && MEAL_COORDINATORS.indexOf(person.display) > -1);
+      }
+      function mealEntryForEvent(e){
+        var link = EVENT_ASSIGN[e.id];
+        if (!link) return null;
+        var entry = null;
+        (CAMP_DATA.responsibilities.mealGroupDuties || []).forEach(function(x){ if (x.meal === link.meal) entry = x; });
+        return entry;
+      }
+      /* Every person in the given assignment groups, in group
+         order, members in sheet order, de-duplicated. The
+         "Children" party expands to the six children in sheet
+         order. */
+      function peopleForGroups(groups){
+        var out = [];
+        (groups || []).forEach(function(g){
+          if (g === "Children") {
+            CAMP_DATA.people.forEach(function(pp){
+              if (pp.category === "Children" && out.indexOf(pp.displayName) === -1) out.push(pp.displayName);
+            });
+            return;
+          }
+          subgroupMembersOrdered(g).forEach(function(dn){ if (out.indexOf(dn) === -1) out.push(dn); });
+        });
+        return out;
+      }
+      function mealDutyBlockHtml(label, groupsText, people, rows){
+        if (!groupsText && !people.length) return "";
+        return '<div class="meal-duty"><p class="meal-duty-head"><span class="meal-duty-label">' + esc(label) + ':</span>'
+          + (groupsText ? ' <span class="meal-duty-groups">' + esc(groupsText) + "</span>" : "")
+          + "</p>"
+          + (people.length
+            ? (rows
+              ? '<ul class="meal-people-rows">' + people.map(function(dn){ return "<li>" + esc(dn) + "</li>"; }).join("") + "</ul>"
+              : '<p class="meal-people">' + people.map(function(dn){ return esc(dn); }).join(", ") + "</p>")
+            : "")
+          + "</div>";
+      }
+      /* The Prepare / Clean up blocks for one meal-duty entry —
+         shared by the Schedule panels and the Assignments
+         "All meal duties" section so both always agree. The
+         Schedule expander passes rows=true: its members list one
+         per line in a smaller font; the All meal duties cards
+         keep the comma-joined line. */
+      function mealEntryBlocksHtml(entry, rows){
+        var prepHead, prepPeople;
+        if (entry.preparePeople && entry.preparePeople.length) {
+          prepHead = entry.prepareLabel || "";
+          prepPeople = entry.preparePeople.slice();
+        } else {
+          prepHead = (entry.prepareGroups || []).join(" + ");
+          prepPeople = peopleForGroups(entry.prepareGroups);
+        }
+        var cleanHead = (entry.cleanupGroups || []).join(" + ");
+        var cleanPeople = peopleForGroups(entry.cleanupGroups);
+        return mealDutyBlockHtml("Prepare", prepHead, prepPeople, rows)
+          + mealDutyBlockHtml("Clean up", cleanHead, cleanPeople, rows);
+      }
+      function mealPanelHtml(e){
+        var entry = mealEntryForEvent(e);
+        if (!entry) return "";
+        return '<div class="meal-panel" id="meal-panel-' + e.id + '" data-meal-panel="' + e.id + '"' + (state.mealOpen[e.id] ? "" : " hidden") + ">"
+          + mealEntryBlocksHtml(entry, true)
+          + "</div>";
+      }
+      /* Toggle one event's panel IN PLACE — no re-render, no
+         scroll, the page stays exactly where the user is. */
+      function toggleMealPanel(evEl){
+        var id = evEl.getAttribute("data-meal-toggle");
+        if (!id) return;
+        var open = !state.mealOpen[id];
+        if (open) state.mealOpen[id] = true; else delete state.mealOpen[id];
+        evEl.classList.toggle("is-open", open);
+        evEl.setAttribute("aria-expanded", String(open));
+        var panel = document.getElementById("meal-panel-" + id);
+        if (panel) panel.hidden = !open;
+      }
+      function bindMealPanels(root){
+        if (!root) return;
+        root.querySelectorAll("[data-meal-toggle]").forEach(function(el){
+          el.addEventListener("click", function(){ toggleMealPanel(el); });
+          el.addEventListener("keydown", function(ev){
+            if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); toggleMealPanel(el); }
+          });
+        });
+      }
+      /* ================= Assignments: All meal duties (coordinators only) =================
+         A coordinators-only section in the MIDDLE of the
+         Assignments tab (Anthony, 2026-11-26): below the
+         coordinator's own sections (their group cards, Upcoming,
+         Past) and above the Groups ("Show all groups") section.
+         Invisible to everyone else — the function returns "" for
+         a non-coordinator, so the section does not exist at all
+         in their tab. Collapsible exactly like Show all groups:
+         collapsed by default behind a show button, with a
+         Collapse control when open (state.allMealsOpen,
+         session-only, reset on user change). Expanded, it lists
+         every meal of camp in chronological order (the
+         mealGroupDuties array order), one card per meal with its
+         day/time, a Now flag on the meal currently in its duty
+         window (prep slot through the meal itself, the same
+         timing the assignment bubbles use) and a Coming up flag
+         on the next one, then the same Prepare / Clean up blocks
+         as the Schedule panels: real responsible group name(s)
+         plus the actual people in them. */
+      function mealWhenText(entry){
+        var td = timedDuty("Meals", entry.meal, entry.cleanupJump || entry.jump);
+        return td ? td.when : "";
+      }
+      function mealStatusFor(entry, nowKey, isNext){
+        var prep = timedDuty("Meals", entry.meal, entry.prepareJump || entry.jump);
+        var clean = timedDuty("Meals", entry.meal, entry.cleanupJump || entry.jump);
+        var start = prep ? prep.key : (clean ? clean.key : null);
+        var end = clean ? clean.endKey : (prep ? prep.endKey : null);
+        if (start !== null && end !== null && nowKey >= start && nowKey < end) return "now";
+        return isNext ? "next" : "";
+      }
+      function allMealDutiesSectionHtml(){
+        if (!isMealCoordinator(state.user)) return "";
+        var h = '<div class="resp-sec"><h2>All meal duties</h2><p>Every meal at camp, in time order — who prepares and who cleans up.</p></div>';
+        if (!state.allMealsOpen) {
+          h += '<div class="actions" style="margin-top:3.32px"><button class="btn primary" id="showAllMealsBtn">Show all meal duties</button></div>';
+          return h;
+        }
+        var entries = CAMP_DATA.responsibilities.mealGroupDuties || [];
+        var nowKey = campNow().key;
+        var nextIdx = -1;
+        entries.forEach(function(entry, i){
+          if (nextIdx > -1) return;
+          var prep = timedDuty("Meals", entry.meal, entry.prepareJump || entry.jump);
+          if (prep && nowKey < prep.key) nextIdx = i;
+        });
+        h += entries.map(function(entry, i){
+          var when = mealWhenText(entry);
+          var st = mealStatusFor(entry, nowKey, i === nextIdx);
+          var flag = st === "now" ? '<span class="meal-status is-now">Now</span>'
+            : (st === "next" ? '<span class="meal-status is-next">Coming up</span>' : "");
+          return '<article class="meal-duty-card"><h3>' + esc(entry.meal) + flag + "</h3>"
+            + (when ? '<p class="meal-when">' + esc(when) + "</p>" : "")
+            + mealEntryBlocksHtml(entry)
+            + "</article>";
+        }).join("")
+          + '<div class="actions"><button class="btn ghost" id="hideAllMealsBtn">Collapse</button></div>';
+        return h;
+      }
+      function bindAllMealsButtons(){
+        var sb = document.getElementById("showAllMealsBtn");
+        if (sb) sb.addEventListener("click", function(){ state.allMealsOpen = true; renderAssignments(); });
+        var hb = document.getElementById("hideAllMealsBtn");
+        if (hb) hb.addEventListener("click", function(){ state.allMealsOpen = false; renderAssignments(); });
+      }
       function evButton(e, dayIdx, nextT, nowInfo, status){
         var isNow = status === "current";
         var isUpNext = status === "upnext";
         var mine = hasAssignmentOnEvent(e);
-        var h = '<div class="ev' + (isNow ? " is-now is-current-filled" : "") + (isUpNext ? " is-upnext" : "") + (mine && !isNow && !isUpNext ? " is-mine" : "") + '" id="ev-' + e.id + '">'
+        /* Coordinators only: meal-duty events are tappable and
+           expand the meal-responsibility panel (helpers above);
+           the only visible cue is a small chevron at the right
+           edge of the bubble — no text label. For everyone else
+           nothing about the card changes. */
+        var tappable = isMealCoordinator(state.user) && !!EVENT_ASSIGN[e.id];
+        var open = !!(tappable && state.mealOpen[e.id]);
+        var h = '<div class="ev' + (isNow ? " is-now is-current-filled" : "") + (isUpNext ? " is-upnext" : "") + (mine && !isNow && !isUpNext ? " is-mine" : "") + (tappable ? " is-tappable" : "") + (open ? " is-open" : "") + '" id="ev-' + e.id + '"'
+          + (tappable ? ' role="button" tabindex="0" aria-expanded="' + String(open) + '" aria-controls="meal-panel-' + e.id + '" data-meal-toggle="' + e.id + '"' : "")
+          + '>'
           + '<span class="ev-time">' + fmt(e.t) + (nextT !== null ? '<span class="to">to ' + fmt(nextT) + "</span>" : "") + "</span>"
           + '<span class="ev-main">'
           + (isNow ? '<span class="now-flag">Now</span>' : "")
@@ -1994,7 +2353,10 @@
           + '<span class="ev-title">' + esc(e.title) + "</span>"
           + descriptionInlineHtml(e)
           + eventTagsHtml(e)
-          + "</span></div>";
+          + "</span>"
+          + (tappable ? '<span class="meal-chev" aria-hidden="true">' + CHEVRON_SVG + "</span>" : "")
+          + "</div>"
+          + (tappable ? mealPanelHtml(e) : "");
         return h;
       }
       function daySection(dayIdx, nowInfo){
@@ -2077,42 +2439,60 @@
         var area = document.getElementById("scheduleArea");
         area.innerHTML = daySection(+state.day, nowInfo);
         bindEventButtons(area);
+        bindMealPanels(area);
         scrollScheduleToCurrent();
       }
 
       /* ================= Rendering: Assignments ================= */
-      /* Assignments tab: shown for EVERY picked user (all 43 have meal
-         assignments) — this tab is never hidden. Top: a "Your group"
-         bubble card — group name as title, the group's full people
-         list with leader(s) starred + bold on top. Below: their timed
-         meal assignments, Upcoming first, Past dimmed at the bottom.
-         Bottom: the Groups section (other groups, collapsible). */
-      /* Groups roster for the Assignments tab: all five sub groups as
-         room-style cards, below the user's own assignments. Leaders
-         (CAMP_DATA.subGroupLeaders) sit at the TOP of each list,
-         starred + bold like room leaders — Adults has two co-leaders,
-         both starred, Anthony first then Rute. Everyone else follows
-         in People-tab order. The picked user's own group card gets
-         the sage is-mine treatment used elsewhere. */
-      var SUBGROUP_ORDER = ["Moms", "Dads", "Adults", "Youth Brothers", "Youth Sisters"];
+      /* Assignments tab: shown for EVERY picked user — this tab is
+         never hidden. Top: a "Your group" bubble card — group name
+         as title, the group's full people list in sheet order with
+         the leader(s) starred at the top. Everyone with a group
+         sees exactly one such card; Mandy Chung and Calvin Ko are
+         in no meal group, so they see none. Below: their timed
+         assignments (meal duties plus the Amazing Race), Upcoming
+         first, Past dimmed at the bottom. Then the Groups section
+         (one card per group, all seven groups, collapsible) and
+         the Amazing Race section (all six race groups and the
+         station masters, collapsible). */
+      /* Groups roster for the Assignments tab: the seven assignment
+         groups as room-style cards, members in sheet order from
+         CAMP_DATA.assignmentGroups. The picked user's own group
+         card gets the sage is-mine treatment used elsewhere. */
+      var SUBGROUP_ORDER = ["Moms 1", "Moms 2", "Dads 1", "Dads 2", "Youth Bros", "Youth Sis", "Adults"];
       function subgroupMembersOrdered(plural){
-        var leaders = leadersForGroup(plural);
+        var hit = null;
+        (CAMP_DATA.assignmentGroups || []).forEach(function(g){ if (g.name === plural) hit = g; });
+        if (hit) return hit.members.slice();
         var rest = [];
         CAMP_DATA.people.forEach(function(pp){
-          if ((SUBGROUP_PLURAL[pp.subGroup] || null) !== plural) return;
-          if (leaders.indexOf(pp.displayName) > -1) return;
+          if ((pp.subGroup || null) !== plural) return;
           rest.push(pp.displayName);
         });
-        return leaders.concat(rest);
+        return rest;
+      }
+      /* Group lookup: the assignmentGroups entry for a group
+         name — its leader field drives the starring below.
+         Groups have leaders only; there is no coordinator
+         field (removed Nov 26 eve). */
+      function assignmentGroupEntry(name){
+        var hit = null;
+        (CAMP_DATA.assignmentGroups || []).forEach(function(g){ if (g.name === name) hit = g; });
+        return hit;
       }
       function subgroupCardHtml(plural, big){
-        var leaders = leadersForGroup(plural);
         var members = subgroupMembersOrdered(plural);
         var mine = !!(state.user && subGroupPlural(state.user) === plural);
+        /* The group's leader(s) (its leader field in
+           assignmentGroups) are members, starred + bold at the
+           top of the member list — the competition-card
+           convention. */
+        var gEntry = assignmentGroupEntry(plural);
+        var leaderNames = !gEntry || !gEntry.leader ? [] : (Array.isArray(gEntry.leader) ? gEntry.leader : [gEntry.leader]);
         var occ = members.map(function(dn){
-          return leaders.indexOf(dn) > -1
+          return leaderNames.indexOf(dn) > -1
             ? '<li class="leader"><strong>★ ' + esc(dn) + "</strong></li>"
-            : '<li>' + esc(dn) + "</li>";
+            : "<li>" + esc(dn) + "</li>";
         }).join("");
         return '<article class="room-card' + (big ? " big" : "") + (mine ? " is-mine" : "") + '">'
           + '<div class="r-top"><h3>' + esc(plural) + "</h3></div>"
@@ -2120,19 +2500,37 @@
           + '<ul class="occ-list">' + occ + "</ul>"
           + "</article>";
       }
-      /* Groups section (Assignments tab): the OTHER groups — never
-         the user's own, which sits on top as the "Your group" card.
-         Collapsed by default behind a "Show all groups" button, with
-         a Collapse control when open — the Rooms tab pattern. With
-         no user picked there is no "own" group, so all five list. */
+      /* Leader note under the "Your group" card (Assignments tab
+         only), styled like the Rooms tab's star note: a leader
+         sees "You're the leader in this group."; everyone else
+         is told who their group's leader(s) are. */
+      function yourGroupLeaderNoteHtml(grp){
+        var gEntry = assignmentGroupEntry(grp);
+        if (!gEntry || !gEntry.leader) return "";
+        var leaders = Array.isArray(gEntry.leader) ? gEntry.leader : [gEntry.leader];
+        if (!leaders.length || !state.user) return "";
+        var text;
+        if (leaders.indexOf(state.user.display) > -1) {
+          text = "You\u2019re the leader in this group.";
+        } else if (leaders.length === 1) {
+          text = "\u2605 " + leaders[0] + " is your leader in this group.";
+        } else {
+          var starred = leaders.map(function(n){ return "\u2605 " + n; });
+          text = starred.slice(0, -1).join(", ") + " and " + starred[starred.length - 1] + " are your leaders in this group.";
+        }
+        return '<p class="star-note">' + esc(text) + "</p>";
+      }
+      /* Groups section (Assignments tab): ALL seven groups, one
+         card per group in a flat grid — no coordinator layer.
+         Collapsed by default behind a "Show all groups" button,
+         with a Collapse control when open — the Rooms tab
+         pattern. */
       function groupsSectionHtml(){
-        var mine = state.user ? subGroupPlural(state.user) : null;
-        var others = SUBGROUP_ORDER.filter(function(g){ return g !== mine; });
-        var h = '<div class="resp-sec"><h2>Groups</h2><p>' + (mine ? "The other groups at camp." : "All five groups at camp.") + "</p></div>";
+        var h = '<div class="resp-sec"><h2>Groups</h2><p>All seven groups at camp.</p></div>';
         if (!state.groupsOpen) {
           h += '<div class="actions" style="margin-top:3.32px"><button class="btn primary" id="showGroupsBtn">Show all groups</button></div>';
         } else {
-          h += '<div class="room-grid">' + others.map(function(g){ return subgroupCardHtml(g, false); }).join("") + "</div>"
+          h += '<div class="room-grid">' + SUBGROUP_ORDER.map(function(g){ return subgroupCardHtml(g, false); }).join("") + "</div>"
             + '<div class="actions"><button class="btn ghost" id="hideGroupsBtn">Collapse</button></div>';
         }
         return h;
@@ -2143,11 +2541,87 @@
         var hg = document.getElementById("hideGroupsBtn");
         if (hg) hg.addEventListener("click", function(){ state.groupsOpen = false; renderAssignments(); });
       }
+      /* Amazing Race cards: same room-card style as the Groups
+         section. A card is "mine" when it is the signed-in user's
+         own race card (their Group N, or the Station masters card
+         for a station master). */
+      function raceCardHtml(title, members, big){
+        var mine = !!(state.user && raceCardTitle(state.user) === title);
+        var occ = members.map(function(dn){ return '<li>' + esc(dn) + "</li>"; }).join("");
+        return '<article class="room-card' + (big ? " big" : "") + (mine ? " is-mine" : "") + '">'
+          + '<div class="r-top"><h3>' + esc(title) + "</h3></div>"
+          + '<p class="room-meta">' + members.length + " people</p>"
+          + '<ul class="occ-list">' + occ + "</ul>"
+          + "</article>";
+      }
+      function raceCardForTitle(title){
+        var ar = CAMP_DATA.amazingRace || {};
+        if (title === "Station masters") return raceCardHtml("Station masters", ar.stationMasters || [], false);
+        var hit = null;
+        (ar.groups || []).forEach(function(g){ if (g.name === title) hit = g; });
+        return hit ? raceCardHtml(hit.name, hit.members, false) : "";
+      }
+      /* Amazing Race section (Race tab): the viewer's own
+         race card on top, shown like the "Your group" card, then
+         the other race groups and the station masters behind a
+         Show / Collapse control — the Groups section pattern.
+         With no user picked there is no own card, so all seven
+         cards sit behind the button. */
+      function raceSectionHtml(){
+        var ar = CAMP_DATA.amazingRace || {};
+        var titles = (ar.groups || []).map(function(g){ return g.name; }).concat(["Station masters"]);
+        var mineTitle = state.user ? raceCardTitle(state.user) : null;
+        var h = '<div class="resp-sec"><h2>Amazing Race</h2><p>' + (mineTitle ? "Your race group for Saturday at 2:00 PM." : "The race groups for Saturday at 2:00 PM.") + "</p></div>";
+        if (mineTitle) {
+          var mineMembers = mineTitle === "Station masters" ? (ar.stationMasters || []) : ((ar.groups || []).filter(function(g){ return g.name === mineTitle; })[0] || {}).members || [];
+          h += '<div style="margin-top:5.81px">' + raceCardHtml(mineTitle, mineMembers, true) + "</div>";
+        }
+        var others = titles.filter(function(t){ return t !== mineTitle; });
+        if (!state.raceOpen) {
+          h += '<div class="actions" style="margin-top:3.32px"><button class="btn primary" id="showRaceBtn">Show all race groups</button></div>';
+        } else {
+          h += '<div class="room-grid">' + others.map(function(t){ return raceCardForTitle(t); }).join("") + "</div>"
+            + '<div class="actions"><button class="btn ghost" id="hideRaceBtn">Collapse</button></div>';
+        }
+        return h;
+      }
+      function bindRaceButtons(){
+        var sr = document.getElementById("showRaceBtn");
+        if (sr) sr.addEventListener("click", function(){ state.raceOpen = true; renderRace(); });
+        var hr = document.getElementById("hideRaceBtn");
+        if (hr) hr.addEventListener("click", function(){ state.raceOpen = false; renderRace(); });
+      }
+      /* ================= Rendering: Amazing Race ================= */
+      /* The whole Amazing Race section lives on its own tab: the
+         signed-in user's own race card plus all six race groups
+         and the station masters list (raceSectionHtml, unchanged).
+         While the race is running (Sat 2:00-4:00 PM) a "Happening
+         now" line sits at the top, with a live countdown card to
+         4:00 PM under it — the same treatment (and the same
+         .comp-timer-card styling) as the Competition countdown
+         in its 4:30-5:30 PM window. Outside the window there is
+         no countdown. The 1-second clock below keeps #raceTimer
+         ticking and re-renders this tab when the window flips. */
+      function renderRace(){
+        var area = document.getElementById("raceArea");
+        if (!area) return;
+        updateRaceTab();
+        var html = "";
+        if (raceLive()) {
+          html += '<div class="race-live-line">Happening now</div>'
+            + '<div class="comp-timer-card"><p class="comp-timer-label">\u2605 Amazing Race is on \u2605</p>'
+            + '<p class="comp-timer-value">Time remaining: <span id="raceTimer">' + fmtCountdown(raceRemainingSeconds()) + "</span></p>"
+            + '<p class="comp-timer-sub">Ends 4:00 PM</p></div>';
+        }
+        html += raceSectionHtml();
+        area.innerHTML = html;
+        bindRaceButtons();
+      }
       function renderAssignments(){
         var area = document.getElementById("assignArea");
         if (!state.user) {
           area.innerHTML = '<div class="prompt-card"><h2>Your assignments</h2>'
-            + "<p>Pick your name once and this tab shows your group and the meals your group prepares and cleans up.</p>"
+            + "<p>Pick your name once and this tab shows your group and your assignments.</p>"
             + '<button class="btn primary" id="assignPickBtn">Pick your name</button></div>'
             + groupsSectionHtml();
           var pb = document.getElementById("assignPickBtn");
@@ -2156,8 +2630,16 @@
           return;
         }
         var grp = subGroupPlural(state.user);
-        var html = '<div class="resp-sec" style="margin-top:8.3px"><h2>Your group</h2><p>Everyone in your group, ' + esc(state.user.display) + " — leaders are starred. Your group shares the meal assignments below.</p></div>"
-          + '<div style="margin-top:5.81px">' + subgroupCardHtml(grp, true) + "</div>";
+        var html = "";
+        if (grp) {
+          html += '<div class="resp-sec" style="margin-top:8.3px"><h2>Your group</h2><p>Everyone in your group, ' + esc(state.user.display) + ". Your group shares the assignments below.</p></div>"
+            + '<div style="margin-top:5.81px">' + subgroupCardHtml(grp, true) + "</div>"
+            + yourGroupLeaderNoteHtml(grp);
+        }
+        /* Exactly one "Your group" card per person with a group
+           (above) — leaders included, as ordinary starred
+           members. Mandy Chung and Calvin Ko are in no meal
+           group, so they get no card here. */
         /* Coordination is a separate Responsibility — assignments
            here are the group duties only, never merged (NO-MERGE). */
         var list = myAssignments();
@@ -2166,7 +2648,7 @@
         var past = list.filter(function(d){ return nowInfo.key >= d.endKey; });
         if (upcoming.length) {
           html += '<div class="resp-sec upcoming-sec"><h2>Upcoming</h2>'
-            + "<p>Your group's meal assignments, in time order.</p>"
+            + "<p>Your assignments, in time order.</p>"
             + '<div class="cat-card">' + upcoming.map(dutyRow).join("") + "</div></div>";
         }
         if (past.length) {
@@ -2175,11 +2657,16 @@
             + '<div class="cat-card">' + past.map(dutyRow).join("") + "</div></div>";
         }
         if (!list.length) {
-          html += '<div class="now-resp-empty" style="margin-top:8.3px">No meal assignments for your group.</div>';
+          html += '<div class="now-resp-empty" style="margin-top:8.3px">No assignments.</div>';
         }
+        /* Coordinators only: the All meal duties section sits
+           here — below the personal sections above, above the
+           Groups section below. "" for everyone else. */
+        html += allMealDutiesSectionHtml();
         html += groupsSectionHtml();
         area.innerHTML = html;
         bindGroupsButtons();
+        bindAllMealsButtons();
         bindEventButtons(area);
       }
 
@@ -2243,6 +2730,36 @@
         var live = compPhase() === "during";
         btn.classList.toggle("comp-live", live);
         var label = live ? "\u2605 Competition \u2605" : "Competition";
+        if (btn.textContent !== label) btn.textContent = label;
+      }
+      /* Amazing Race window (camp time, driven by campNow()):
+         Saturday 2:00 PM until 4:00 PM — it ends when the
+         4:00 PM Grouping starts. */
+      var RACE_START_KEY = 1 * 1440 + 14 * 60;
+      var RACE_END_KEY = 1 * 1440 + 16 * 60;
+      function raceLive(){
+        var k = campNow().key;
+        return k >= RACE_START_KEY && k < RACE_END_KEY;
+      }
+      /* Seconds left in the race (to 4:00 PM) — the exact mirror
+         of compRemainingSeconds() for the Competition countdown. */
+      function raceRemainingSeconds(){
+        var now = campNow();
+        var minsLeft = RACE_END_KEY - now.key;
+        if (minsLeft <= 0) return 0;
+        var sec = new Date().getSeconds();
+        var total = minsLeft * 60 - sec;
+        return total > 0 ? total : 0;
+      }
+      /* The Race tab button flashes with stars while the race is
+         running — exactly like the Competition tab, visible from
+         every tab. */
+      function updateRaceTab(){
+        var btn = document.getElementById("tab-race");
+        if (!btn) return;
+        var live = raceLive();
+        btn.classList.toggle("race-live", live);
+        var label = live ? "\u2605 Amazing Race \u2605" : "Amazing Race";
         if (btn.textContent !== label) btn.textContent = label;
       }
       /* Scored dishes: competing teams named by their DISH only.
@@ -4166,7 +4683,7 @@
       }
 
       /* ================= Navigation ================= */
-      var VIEWS = ["schedule", "assign", "comp", "tracker", "rooms", "info"];
+      var VIEWS = ["schedule", "assign", "comp", "race", "tracker", "rooms", "info"];
       function showView(v){
         if (!state.user) { applyGate(); openPicker(); return; }
         if (VIEWS.indexOf(v) === -1) v = "schedule";
@@ -4188,6 +4705,7 @@
         if (v === "schedule") renderSchedule();
         if (v === "assign") renderAssignments();
         if (v === "comp") renderCompetition();
+        if (v === "race") renderRace();
         if (v === "tracker") renderTracker();
         if (v === "rooms") renderRooms();
         if (v === "info") renderInfo();
@@ -4220,7 +4738,10 @@
         saveTrack(state.track);
         state.roomsMode = "default";
         state.groupsOpen = false;
+        state.raceOpen = false;
         state.otherTeamsOpen = false;
+        state.mealOpen = {};
+        state.allMealsOpen = false;
         state.foundUnit = null;
         state.foundName = null;
         var searchEl = document.getElementById("pickerSearch");
@@ -4241,6 +4762,7 @@
         if (state.view === "schedule") renderSchedule();
         if (state.view === "assign") renderAssignments();
         if (state.view === "comp") renderCompetition();
+        if (state.view === "race") renderRace();
         if (state.view === "tracker") renderTracker();
         if (state.view === "rooms") renderRooms();
         if (state.view === "info") renderInfo();
@@ -4274,8 +4796,10 @@
          if it is open so the timer / scoring / done states land
          without a manual refresh. */
       var lastCompPhase = compPhase();
+      var lastRaceLive = raceLive();
       setInterval(function(){
         updateCompTab();
+        updateRaceTab();
         /* Keeps the Voting Tracker tab's existence current:
            it appears the moment the after phase begins (for a
            tracker viewer, state still open) and vanishes when
@@ -4288,9 +4812,18 @@
           else if (state.user && state.view === "tracker") renderTracker();
           return;
         }
+        var rl = raceLive();
+        if (rl !== lastRaceLive) {
+          lastRaceLive = rl;
+          if (state.user && state.view === "race") renderRace();
+        }
         if (ph === "during") {
           var tEl = document.getElementById("compTimer");
           if (tEl) tEl.textContent = fmtCountdown(compRemainingSeconds());
+        }
+        if (rl) {
+          var rEl = document.getElementById("raceTimer");
+          if (rEl) rEl.textContent = fmtCountdown(raceRemainingSeconds());
         }
       }, 1000);
       /* Final results polling: in the after phase, while the
