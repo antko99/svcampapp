@@ -929,17 +929,26 @@
          sign-in proceeds exactly as before. When an entry is set
          to a non-empty password, picking that user requires
          entering it on the password screen before sign-in
-         completes. The eight camp leaders share one password. */
+         completes. SECURITY CORRECTION (2026-11-26): the eight
+         camp leaders previously shared one password stored here
+         in plain text. A static page cannot keep a secret — the
+         value sat in the published page's source, readable by
+         anyone — so the shared password has been REMOVED and
+         must be treated as compromised. All entries are now
+         empty: name-picking on this page is unauthenticated,
+         and no credential ships in the source. A real sign-in
+         gate would need a server-side check, which this static
+         page does not have. */
       var USER_PASSWORDS = {
-        "Mandy Chung": "adminadmin", "Calvin Ko": "adminadmin", "Esther": "", "Sincere": "", "Timothy Ko": "adminadmin",
+        "Mandy Chung": "", "Calvin Ko": "", "Esther": "", "Sincere": "", "Timothy Ko": "",
         "Samuel Li": "", "Ethan Chan": "", "Lukas Tsui": "", "Jeffrey Tsui": "", "Daniel": "",
-        "Anthony": "adminadmin", "Leo": "", "Justin Wong": "", "Enoch Chan": "", "Timothy Chan": "",
-        "Titus": "", "Acacia": "adminadmin", "Anya Li": "", "Joelle Chan": "", "Ingrid": "",
+        "Anthony": "", "Leo": "", "Justin Wong": "", "Enoch Chan": "", "Timothy Chan": "",
+        "Titus": "", "Acacia": "", "Anya Li": "", "Joelle Chan": "", "Ingrid": "",
         "Harmony Chan": "", "Charity Chan": "", "Gordon": "", "Nicole": "", "Justin Chan": "",
-        "Nanci": "", "Tommy": "", "Christine": "", "Rute": "adminadmin", "Elyse": "",
+        "Nanci": "", "Tommy": "", "Christine": "", "Rute": "", "Elyse": "",
         "Pearl": "", "Aimee Yau": "", "Praylee": "", "Yanmi": "", "Danny": "",
-        "Lilian": "", "Chris": "", "Kelly": "", "Winly": "adminadmin", "Osborn": "",
-        "Kerry": "adminadmin", "Kenneth": "", "Aimee Du": ""
+        "Lilian": "", "Chris": "", "Kelly": "", "Winly": "", "Osborn": "",
+        "Kerry": "", "Kenneth": "", "Aimee Du": ""
       };
       var pendingUser = null;
       /* ================================================================
@@ -1146,7 +1155,7 @@
             { id:"sat-e-race",     t:14*60,    title:"Amazing Race & Fun", track:"english", duty:{ who:"Timothy Ko & Acacia", label:"Leading this" } },
             { id:"sat-e-grouping-pm", t:16*60, title:"Grouping", track:"english" },
             { id:"sat-e-comp",     t:16*60+30, title:"Cooking Competition / Prep Dinner", track:"english", duty:{ who:"Anthony", label:"Leading this" } },
-            { id:"sat-e-dinner",   t:17*60+30, title:"Dinner", foodNote:"Ground beef 8 · rice 18 cups · veggies 16 lbs", foodFor:"Anthony", foodGroup:"Adults", track:"english" },
+            { id:"sat-e-dinner",   t:17*60+30, title:"Dinner & Cleanup", foodNote:"Ground beef 8 · rice 18 cups · veggies 16 lbs", foodFor:"Anthony", foodGroup:"Adults", track:"english" },
             { id:"sat-e-break",    t:18*60+45, title:"Break", track:"english" },
             { id:"sat-e-family",   t:19*60,    title:"Family Time", track:"english", duty:{ who:"Mandy Chung", label:"Leading this" } },
             { id:"sat-e-shower",   t:20*60,    title:"Shower Time / Self Arrangement / Room Time / Board Games", track:"english" }
@@ -1165,7 +1174,7 @@
             { id:"sat-p-race",     t:14*60,    title:"Amazing Race & Fun", track:"shared", duty:{ who:"Timothy Ko & Acacia", label:"Leading this" } },
             { id:"sat-p-grouping-pm", t:16*60, title:"Grouping", track:"shared" },
             { id:"sat-p-comp",     t:16*60+30, title:"Cooking Competition / Prep Dinner", track:"shared", duty:{ who:"Anthony", label:"Leading this" } },
-            { id:"sat-p-dinner",   t:17*60+30, title:"Dinner", foodNote:"Ground beef 8 · rice 18 cups · veggies 16 lbs", foodFor:"Anthony", foodGroup:"Adults", track:"shared" },
+            { id:"sat-p-dinner",   t:17*60+30, title:"Dinner & Cleanup", foodNote:"Ground beef 8 · rice 18 cups · veggies 16 lbs", foodFor:"Anthony", foodGroup:"Adults", track:"shared" },
             { id:"sat-p-break",    t:18*60+45, title:"Break", track:"shared" },
             { id:"sat-p-family",   t:19*60,    title:"Family Time", track:"shared", duty:{ who:"Mandy Chung", label:"Leading this" } },
             { id:"sat-p-sing",     t:20*60,    title:"Parent Phone Sing & After-prayer Fellowship", track:"parents" },
@@ -1240,8 +1249,16 @@
           /* Timing (Anthony's rule): Prepare for lunch & dinner
              is timed at the explicit Prepare slots in the schedule
              (prepareJump); breakfast Prepare is implied beforehand, so
-             it stays at the 9:00 AM breakfast itself; ALL clean up is
-             timed during the meal itself (cleanupJump = the meal). */
+             it stays at the 9:00 AM breakfast itself; clean up is
+             timed during the meal itself (cleanupJump = the meal).
+             Update (Anthony, 2026-11-26 evening, corrected later
+             that evening): Friday and Saturday DINNER clean up
+             happens during the meal, so on the Schedule those two
+             Clean up assignments show on the dinner event ONLY —
+             NOT on the evening slash block (the Shower Time /
+             Board Games block), which is shower / free time and
+             carries no clean-up assignment (see EVENT_ASSIGN).
+             Still one assignment entry each, timed at the meal. */
           /* Duties keyed by the seven assignment groups
              (prepareGroups / cleanupGroups; table re-read from
              the sheet's Meal Duties tab 2026-11-26 eve). Where
@@ -1789,7 +1806,19 @@
          group ALSO sees Prepare on the breakfast event. Only the
          signed-in user's own group assignment ever shows; a user in
          neither group sees nothing extra. This is separate from
-         coordination — nothing is merged. */
+         coordination — nothing is merged.
+         DINNER CLEAN UP (Anthony, 2026-11-26, corrected later
+         that evening): the two dinners' clean up happens DURING
+         the meal, so the Clean up assignment attaches to the meal
+         event ONLY — NOT to the evening slash block (Friday's
+         8:30 PM "Shower Time / Self Arrangement / Board Games
+         together", Saturday's 8:00 PM English-track "Shower Time
+         / Self Arrangement / Room Time / Board Games"): those
+         blocks are shower / free time and carry no clean-up
+         bubble and no coordinator expander. The Assignments tab
+         keeps a single Clean up entry per meal, timed at the meal
+         (cleanupJump). Breakfast and lunch clean ups likewise stay
+         on the meal event only. */
       var EVENT_ASSIGN = {
         "fri-group":       { meal:"Friday Dinner",    kind:"prepare" },
         "fri-act":         { meal:"Friday Dinner",    kind:"prepare" },
@@ -2160,7 +2189,7 @@
          the six coordinators — the same six as the competition
          Coordinators team — can tap any schedule event that carries
          meal duties (EVENT_ASSIGN: the prep slots, the breakfasts
-         and the meals themselves for Friday dinner, Saturday
+         and the meals themselves, for Friday dinner, Saturday
          breakfast / lunch / dinner and Sunday breakfast) to expand
          a panel directly under the event naming who is responsible
          for that meal: the Prepare group name(s) AND the actual
