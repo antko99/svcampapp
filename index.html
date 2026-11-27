@@ -334,6 +334,15 @@
          in a smaller font than the bubble text around them. */
       .meal-people-rows{ list-style:none; margin:2.02px 0 0; padding:0; font-size:0.7276rem; font-weight:400; color:var(--ink-soft); line-height:1.5;}
       .meal-people-rows li{ margin:0; padding:0;}
+      /* Per-group cards inside a duty section (Anthony, 2026-11-26
+         late): one card per contributing group/party, header =
+         the group name, body = that group's members one per line.
+         Shown even when only one group does the duty, so it is
+         always obvious who belongs to which group. Two parties
+         sit side by side when there is room, stacked otherwise. */
+      .meal-group-cards{ display:grid; grid-template-columns:repeat(auto-fit, minmax(128px, 1fr)); gap:5.38px; margin-top:4.03px;}
+      .meal-group-card{ background:var(--surface); border:1px solid var(--line); border-radius:9px; padding:5.38px 8.07px 6.05px; min-width:0;}
+      .meal-group-head{ margin:0; font-size:0.7799rem; font-weight:900; line-height:1.35; color:var(--ink);}
       /* Assignments "All meal duties" cards (coordinators only) */
       .meal-duty-card{ background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); padding:8.07px 11.34px; margin-top:6.72px;}
       .meal-duty-card h3{ font-size:0.9534rem; font-weight:900; margin:0;}
@@ -341,6 +350,23 @@
       .meal-status{ display:inline-block; font-size:0.624rem; font-weight:400; letter-spacing:.06em; text-transform:uppercase; padding:2.02px 7.29px; border-radius:809.19px; vertical-align:2px; margin-left:6.48px;}
       .meal-status.is-now{ background:var(--now-fill); color:#FFF8F0;}
       .meal-status.is-next{ background:var(--mustard-bg); color:var(--mustard-strong); border:1px solid var(--mustard-line);}
+      /* ---------- Meal location tags ----------
+         Shown on meal events (Schedule), on meal-duty entries
+         (Assignments) and on the per-group party cards of the
+         coordinators' All meal duties cards. The text is ALWAYS
+         a room number ("Room P273"), "room number tba" when a
+         unit is assigned but has no room number yet, or "no unit"
+         when no unit is assigned — a unit number is never
+         displayed (see mealLocations). */
+      .loc-tag{ display:inline-flex; align-items:center; gap:4.03px 4.86px; background:var(--teal-bg); color:var(--teal-strong);
+        border:1px solid var(--teal-line); border-radius:809.19px; padding:2.02px 8.1px; font-size:0.6934rem; font-weight:400; line-height:1.35; white-space:nowrap;}
+      .loc-tag::before{ content:""; width:6px; height:6px; border-radius:50%; background:var(--teal); flex:none;}
+      #view-schedule .loc-tag{ padding:1.34px 6.48px; font-size:0.6414rem;}
+      .ev.is-current-filled .loc-tag{ background:#FFFFFF; border-color:#FFFFFF; color:var(--teal-strong);}
+      .ev.is-current-filled .loc-tag::before{ background:var(--teal);}
+      .plain-duty .d-loc{ display:block; margin-top:2.69px;}
+      .meal-group-loc{ margin-top:4.03px;}
+      .comp-loc{ margin-top:4.03px;}
       .ev-list{ display:block;}
       .flash{ animation:flash 1.6s ease;}
       @keyframes flash{ 0%,60%{ background:var(--accent-soft) } 100%{ background:var(--surface) } }
@@ -1310,14 +1336,38 @@
           notAssignedYet: ["Speaker", "Volleyball", "Ball Pump", "Board Games", "Kewpie Mayo"]
         },
         rooms: [
-          { unit:"Unit 1", type:"2-bedroom", reservationHolder:"Mandy", leader:"Anthony", roomNumber:null, occupants:["Anthony", "Leo", "Justin Wong", "Enoch Chan", "Timothy Chan", "Titus"] },
+          { unit:"Unit 1", type:"2-bedroom", reservationHolder:"Mandy", leader:"Anthony", roomNumber:"P273", occupants:["Anthony", "Leo", "Justin Wong", "Enoch Chan", "Timothy Chan", "Titus"] },
           { unit:"Unit 2", type:"2-bedroom", reservationHolder:"Timothy", leader:"Timothy Ko", roomNumber:null, occupants:["Timothy Ko", "Samuel Li", "Ethan Chan", "Lukas Tsui", "Jeffrey Tsui", "Daniel"] },
-          { unit:"Unit 3", type:"2-bedroom", reservationHolder:"Anthony", leader:"Winly", roomNumber:"P273", occupants:["Winly", "Danny", "Chris", "Kelly", "Lilian"] },
+          { unit:"Unit 3", type:"2-bedroom", reservationHolder:"Anthony", leader:"Winly", roomNumber:null, occupants:["Winly", "Danny", "Chris", "Kelly", "Lilian"] },
           { unit:"Unit 4", type:"2-bedroom", reservationHolder:"Acacia", leader:"Acacia", roomNumber:null, occupants:["Acacia", "Anya Li", "Joelle Chan", "Ingrid", "Harmony Chan", "Charity Chan"] },
           { unit:"Unit 5", type:"2-bedroom", reservationHolder:"Calvin", leader:"Gordon", roomNumber:null, occupants:["Gordon", "Nicole", "Justin Chan", "Nanci", "Tommy", "Christine"] },
           { unit:"Unit 6", type:"2-bedroom", reservationHolder:"Rute", leader:"Rute", roomNumber:null, occupants:["Rute", "Elyse", "Pearl", "Aimee Yau", "Praylee", "Yanmi"] },
           { unit:"Unit 7", type:"1-bedroom", reservationHolder:"Esther Ho", leader:"Kerry", roomNumber:null, occupants:["Kerry", "Osborn", "Kenneth", "Aimee Du"] },
           { unit:"Unit 8", type:"1-bedroom", reservationHolder:"Chris", leader:"Mandy Chung", roomNumber:null, occupants:["Mandy Chung", "Calvin Ko", "Esther", "Sincere"] }
+        ],
+        /* Meal locations (Anthony, 2026-11-26 late): where each
+           meal is eaten / served. Each location references a UNIT
+           internally (unit: "Unit 1" style, matching rooms[].unit;
+           null = not assigned yet). Units from the sheet
+           (Accommodation & Carpool, rows 22-23): Dinner and Lunch
+           -> Unit 1, English Breakfast -> Unit 2, Parents
+           Breakfast -> none. Users NEVER see a unit number here:
+           the app resolves unit -> that unit's roomNumber and
+           shows the room number, exactly "room number tba" when
+           a unit is assigned but has no room number yet, or
+           exactly "no unit" when no unit is assigned. Room
+           numbers live in exactly ONE place —
+           rooms[].roomNumber above; this table stores only unit
+           references. Breakfasts have TWO locations: the first
+           listed is "Parents" (Moms / Dads eat there), the second
+           is "English" (everyone else). Saturday Lunch is
+           English only. */
+        mealLocations: [
+          { meal:"Friday Dinner", locations:[{ unit:"Unit 1" }] },
+          { meal:"Saturday Breakfast", locations:[{ label:"Parents", unit:null }, { label:"English", unit:"Unit 2" }] },
+          { meal:"Saturday Lunch", locations:[{ label:"English", unit:"Unit 1" }] },
+          { meal:"Saturday Dinner", locations:[{ unit:"Unit 1" }] },
+          { meal:"Sunday Breakfast", locations:[{ label:"Parents", unit:null }, { label:"English", unit:"Unit 2" }] }
         ],
         cars: [
           { driver:"Calvin", car:"Red Tesla Model Y" },
@@ -1338,7 +1388,14 @@
            2026-11-23 evening): Saturday teams — name, dish (some teams
            have none yet), leader (first-listed member, starred like
            room leaders) and members in sheet order. Every camper is
-           on exactly one team. */
+           on exactly one team. Each team also carries unit — the
+           unit whose kitchen the team works in (the sheet's unit
+           row under the dishes, added 2026-11-26 late; Coordinators
+           and Extras have none). Internal only, same model as
+           mealLocations: team cards show the resolved room number,
+           "room number tba" when the team's unit has no room number
+           yet, or "no unit" when no unit is assigned — never the
+           unit itself. */
         competition: {
           introText: "Prepare your dish to see who wins! You have 1 hour from 4:30 to 5:30!",
           /* The 4 competition rules (Anthony, 2026-11-23) — shown
@@ -1382,15 +1439,15 @@
              dishes. The People's Award is separate: one overall
              winner by highest People's average across all 7 dishes. */
           teams: [
-            { name:"Dad 1", dish:"Egg Custard", category:"dessert", leader:"Gordon", members:["Gordon", "Chris", "Kenneth", "Leo"] },
-            { name:"Dad 2", dish:"Malaysia dessert “bur bur cha cha”", category:"dessert", leader:"Danny", members:["Danny", "Osborn", "Justin Chan", "Tommy"] },
-            { name:"Mom 1", dish:"雪芒脆脆糯（趣趣樂）", category:"dessert", leader:"Kerry", members:["Kerry", "Aimee Du", "Nicole", "Nanci"] },
-            { name:"Mom 2", dish:"甜湯丸", category:"dessert", leader:"Winly", members:["Winly", "Christine", "Kelly", "Lilian"] },
-            { name:"Young Adults", dish:"Crème caramel", category:"dessert", leader:"Yanmi", members:["Yanmi", "Justin Wong", "Sincere", "Esther"] },
-            { name:"Youth Brothers", dish:"Cresent Dough Wraps", category:"appetizer", leader:"Enoch Chan", members:["Enoch Chan", "Samuel Li", "Jeffrey Tsui", "Daniel", "Ethan Chan", "Lukas Tsui"] },
-            { name:"Youth Sisters", dish:"Cresent Dough Wraps", category:"appetizer", leader:"Harmony Chan", members:["Harmony Chan", "Ingrid", "Anya Li", "Charity Chan", "Joelle Chan"] },
-            { name:"Coordinators", dish:null, leader:"Anthony", members:["Anthony", "Mandy Chung", "Calvin Ko", "Rute", "Acacia", "Timothy Ko"] },
-            { name:"Extras", dish:null, leader:"Timothy Chan", members:["Timothy Chan", "Titus", "Pearl", "Praylee", "Elyse", "Aimee Yau"] }
+            { name:"Dad 1", unit:"Unit 5", dish:"Egg Custard", category:"dessert", leader:"Gordon", members:["Gordon", "Chris", "Kenneth", "Leo"] },
+            { name:"Dad 2", unit:"Unit 8", dish:"Malaysia dessert “bur bur cha cha”", category:"dessert", leader:"Danny", members:["Danny", "Osborn", "Justin Chan", "Tommy"] },
+            { name:"Mom 1", unit:"Unit 7", dish:"雪芒脆脆糯（趣趣樂）", category:"dessert", leader:"Kerry", members:["Kerry", "Aimee Du", "Nicole", "Nanci"] },
+            { name:"Mom 2", unit:"Unit 3", dish:"甜湯丸", category:"dessert", leader:"Winly", members:["Winly", "Christine", "Kelly", "Lilian"] },
+            { name:"Young Adults", unit:"Unit 6", dish:"Crème caramel", category:"dessert", leader:"Yanmi", members:["Yanmi", "Justin Wong", "Sincere", "Esther"] },
+            { name:"Youth Brothers", unit:"Unit 2", dish:"Cresent Dough Wraps", category:"appetizer", leader:"Enoch Chan", members:["Enoch Chan", "Samuel Li", "Jeffrey Tsui", "Daniel", "Ethan Chan", "Lukas Tsui"] },
+            { name:"Youth Sisters", unit:"Unit 4", dish:"Cresent Dough Wraps", category:"appetizer", leader:"Harmony Chan", members:["Harmony Chan", "Ingrid", "Anya Li", "Charity Chan", "Joelle Chan"] },
+            { name:"Coordinators", unit:null, dish:null, leader:"Anthony", members:["Anthony", "Mandy Chung", "Calvin Ko", "Rute", "Acacia", "Timothy Ko"] },
+            { name:"Extras", unit:null, dish:null, leader:"Timothy Chan", members:["Timothy Chan", "Titus", "Pearl", "Praylee", "Elyse", "Aimee Yau"] }
           ]
         }
       };
@@ -1611,6 +1668,19 @@
             var td = timedDuty("Meals", r.role + " — " + x.meal + " (" + r.label + ")", jumpId);
             if (!td) return;
             td.role = r.role; td.meal = x.meal; td.group = r.label;
+            /* Meal location this party serves (Assignments tab):
+               for the two-location breakfasts, the party's index
+               in the duty's group list picks the location — the
+               first-listed party (Moms 1 / Dads 1 on Prepare,
+               Moms 2 / Dads 2 on Clean up) serves the Parents
+               location, the second party (Children / Youth Sis /
+               Youth Bros) serves the English location; single-
+               location meals serve that meal's one location. The
+               text is a room number, "room number tba" or "no unit"
+               — never a unit. */
+            var dutyGroups = r.role === "Prepare" ? (x.prepareGroups || []) : (x.cleanupGroups || []);
+            var partyIdx = dutyGroups.indexOf(r.label);
+            td.locText = mealLocTextForParty(x, r.role === "Prepare" ? "prepare" : "cleanup", r.label, partyIdx > -1 ? partyIdx : undefined);
             td.when = DAYS[td.day].full + " \u00b7 " + fmt(td.t);
             out.push(td);
           });
@@ -1911,9 +1981,10 @@
          food/menu text for any user. Empty when the signed-in user
          has nothing on this event. */
       function eventTagsHtml(e){
+        var loc = mealLocationTagHtml(e);
         var assign = myEventAssignHtml(e);
-        if (!assign) return "";
-        return '<span class="ev-tags">' + assign + "</span>";
+        if (!loc && !assign) return "";
+        return '<span class="ev-tags">' + loc + assign + "</span>";
       }
       function hasAssignmentOnEvent(e){ return !!myEventAssignHtml(e); }
       function tagHtml(e, dayIdx){ return ""; }
@@ -2164,11 +2235,13 @@
       function respRowHtml(d){
         return '<div class="plain-duty"><span class="d-cat">' + esc(d.cat) + '</span><span class="d-what">' + esc(d.what) + '</span>'
           + (d.when ? '<span class="d-when">' + esc(d.when) + '</span>' : '')
+          + (d.locText ? '<span class="d-loc"><span class="loc-tag">' + esc(d.locText) + '</span></span>' : '')
           + (d.note ? '<span class="d-note">' + esc(d.note) + '</span>' : '') + '</div>';
       }
       function dutyRow(d){
         return '<div class="plain-duty"><span class="d-cat">' + esc(d.cat) + '</span><span class="d-what">' + esc(d.what) + "</span>"
           + (d.when ? '<span class="d-when">' + esc(d.when) + "</span>" : "")
+          + (d.locText ? '<span class="d-loc"><span class="loc-tag">' + esc(d.locText) + '</span></span>' : "")
           + (d.note ? '<span class="d-note">' + esc(d.note) + "</span>" : "") + "</div>";
       }
 
@@ -2194,6 +2267,113 @@
         if (nowKey < endKey) return "current";
         return "past";
       }
+      /* ================= Meal locations =================
+         CAMP_DATA.mealLocations maps each meal to its location(s)
+         as UNIT references (internal only). Display ALWAYS goes
+         through mealLocDisplay (three states): unit assigned and
+         its room number known -> "Room <number>"; unit assigned
+         but no room number yet -> exactly "room number tba"; no
+         unit assigned -> exactly "no unit". A unit number itself
+         is never rendered anywhere for a meal location. */
+      function roomNumberForUnit(unit){
+        if (unit == null || unit === "") return null;
+        var key = String(unit).trim();
+        var norm = key;
+        if (!/^unit\s/i.test(key) && /^\d+$/.test(key)) norm = "Unit " + key;
+        var hit = null;
+        (CAMP_DATA.rooms || []).forEach(function(r){ if (r.unit === norm || r.unit === key) hit = r; });
+        return hit ? (hit.roomNumber || null) : null;
+      }
+      function mealLocationsFor(meal){
+        var hit = null;
+        (CAMP_DATA.mealLocations || []).forEach(function(m){ if (m.meal === meal) hit = m; });
+        return hit ? (hit.locations || []) : [];
+      }
+      function mealLocDisplay(loc){
+        if (!loc || loc.unit == null || loc.unit === "") return "no unit";
+        var rn = roomNumberForUnit(loc.unit);
+        return rn ? "Room " + rn : "room number tba";
+      }
+      /* Parents-category people (Moms / Dads) eat at the Parents
+         breakfast location; everyone else at the English one. */
+      function isParentsPerson(person){
+        if (!person) return false;
+        if (person.category === "Parent") return true;
+        var g = person.subGroup || "";
+        if (g.indexOf("Moms") === 0 || g.indexOf("Dads") === 0) return true;
+        return person.defaultTrack === "parents";
+      }
+      /* The single location text for a one-location meal (the
+         Schedule breakfast bubbles do NOT use this — they show
+         both locations, labelled, to everyone; see
+         mealLocationTagHtml. Kept for the one-location path:
+         Parents people would get the Parents location of a
+         two-location meal, everyone else the English one.) */
+      function mealLocTextForViewer(meal, person){
+        var locs = mealLocationsFor(meal);
+        if (!locs.length) return "no unit";
+        if (locs.length === 1) return mealLocDisplay(locs[0]);
+        var want = isParentsPerson(person) ? "Parents" : "English";
+        var pick = null;
+        locs.forEach(function(l){ if (l.label === want) pick = l; });
+        if (!pick) pick = locs[want === "Parents" ? 0 : (locs.length - 1)];
+        return mealLocDisplay(pick);
+      }
+      /* The location text for ONE serving party of a meal duty:
+         single-location meals — that location for every party;
+         two-location breakfasts — party index 0 (the first-listed
+         party: Moms 1 / Dads 1 on Prepare, Moms 2 / Dads 2 on
+         Clean up) serves the Parents location, index 1+ (Children
+         / Youth Sis / Youth Bros) serves the English location.
+         With no index, fall back to the party name (Moms / Dads
+         -> Parents, anything else -> English). */
+      function mealLocTextForParty(entry, kind, partyName, partyIndex){
+        var locs = mealLocationsFor(entry ? entry.meal : null);
+        if (!locs.length) return "no unit";
+        if (locs.length === 1) return mealLocDisplay(locs[0]);
+        var idx;
+        if (typeof partyIndex === "number" && partyIndex >= 0) idx = partyIndex;
+        else idx = /^(Moms|Dads)/.test(partyName || "") ? 0 : 1;
+        if (idx >= locs.length) idx = locs.length - 1;
+        return mealLocDisplay(locs[idx]);
+      }
+      /* MEAL events only — the events that ARE a meal (never a
+         prep slot, never a clean-up block, never the Parents
+         "Couple Time & Lunch" block: Saturday lunch's meal event
+         is the English one). Both Saturday track variants of
+         breakfast / dinner are the same meal and both carry the
+         tag; breakfast events carry BOTH location bubbles,
+         labelled Parents / English, for everyone (below). */
+      var MEAL_EVENTS = {
+        "fri-dinner": "Friday Dinner",
+        "sat-e-breakfast": "Saturday Breakfast",
+        "sat-p-breakfast": "Saturday Breakfast",
+        "sat-e-lunch": "Saturday Lunch",
+        "sat-e-dinner": "Saturday Dinner",
+        "sat-p-dinner": "Saturday Dinner",
+        "sun-breakfast": "Sunday Breakfast"
+      };
+      function mealLocationTagHtml(e){
+        if (!e) return "";
+        var meal = MEAL_EVENTS[e.id];
+        if (!meal) return "";
+        var locs = mealLocationsFor(meal);
+        /* Two-location meals (the breakfasts) are TRANSPARENT in
+           the Schedule (Anthony, 2026-11-26 late): no personalising
+           — everyone sees BOTH bubbles, one labelled "Parents" and
+           one labelled "English", each with its own location (a
+           room number, "room number tba" or "no unit").
+           One-location meals keep the
+           single bubble. (Assignments entries stay personal: they
+           show only the location of the party you belong to.) */
+        if (locs.length > 1) {
+          return locs.map(function(loc, i){
+            var lbl = loc.label || (i === 0 ? "Parents" : "English");
+            return '<span class="loc-tag" data-meal-loc="' + esc(meal) + '">' + esc(lbl + ": " + mealLocDisplay(loc)) + "</span>";
+          }).join("");
+        }
+        return '<span class="loc-tag" data-meal-loc="' + esc(meal) + '">' + esc(mealLocTextForViewer(meal, state.user)) + "</span>";
+      }
       /* ================= Coordinators: meal responsibility panels =================
          SCHEDULE TAB ONLY, COORDINATORS ONLY (Anthony, 2026-11-26):
          the six coordinators — the same six as the competition
@@ -2210,8 +2390,12 @@
          coordinators' overview, so it shows the REAL responsible
          parties — the merged youth groups are single groups now,
          and a "Children" duty expands to the six children;
-         Saturday Dinner Prepare has no group and lists its twelve
-         named people (preparePeople) under its sheet label. It
+         Saturday Dinner Prepare has no group: its twelve named
+         people (preparePeople) split into a "Coordinators" card
+         (the six coordinators) and a "Children" card. Each duty
+         section renders one card per contributing group/party,
+         header = group name, members one per line inside — even
+         when only one group does the duty. It
          shows whether or not the coordinator is personally on the
          duty. Everyone else's schedule is completely unchanged:
          no chevron, no panel, not tappable. Expansion state is
@@ -2232,59 +2416,93 @@
         (CAMP_DATA.responsibilities.mealGroupDuties || []).forEach(function(x){ if (x.meal === link.meal) entry = x; });
         return entry;
       }
+      /* Every person in ONE assignment group, members in sheet
+         order. The "Children" party expands to the six children
+         in sheet order. */
+      function peopleForGroup(g){
+        if (g === "Children") {
+          var out = [];
+          CAMP_DATA.people.forEach(function(pp){
+            if (pp.category === "Children" && out.indexOf(pp.displayName) === -1) out.push(pp.displayName);
+          });
+          return out;
+        }
+        return subgroupMembersOrdered(g);
+      }
       /* Every person in the given assignment groups, in group
-         order, members in sheet order, de-duplicated. The
-         "Children" party expands to the six children in sheet
-         order. */
+         order, members in sheet order, de-duplicated. */
       function peopleForGroups(groups){
         var out = [];
         (groups || []).forEach(function(g){
-          if (g === "Children") {
-            CAMP_DATA.people.forEach(function(pp){
-              if (pp.category === "Children" && out.indexOf(pp.displayName) === -1) out.push(pp.displayName);
-            });
-            return;
-          }
-          subgroupMembersOrdered(g).forEach(function(dn){ if (out.indexOf(dn) === -1) out.push(dn); });
+          peopleForGroup(g).forEach(function(dn){ if (out.indexOf(dn) === -1) out.push(dn); });
         });
         return out;
       }
-      function mealDutyBlockHtml(label, groupsText, people, rows){
-        if (!groupsText && !people.length) return "";
-        return '<div class="meal-duty"><p class="meal-duty-head"><span class="meal-duty-label">' + esc(label) + ':</span>'
-          + (groupsText ? ' <span class="meal-duty-groups">' + esc(groupsText) + "</span>" : "")
-          + "</p>"
-          + (people.length
-            ? (rows
-              ? '<ul class="meal-people-rows">' + people.map(function(dn){ return "<li>" + esc(dn) + "</li>"; }).join("") + "</ul>"
-              : '<p class="meal-people">' + people.map(function(dn){ return esc(dn); }).join(", ") + "</p>")
-            : "")
-          + "</div>";
+      /* The contributing parties for one duty of a meal entry,
+         as [{ name, people }] — one entry per group/party, in
+         duty order. Group duties map one party per group name.
+         Saturday Dinner Prepare has no group (preparePeople):
+         its twelve named people split into two parties — the
+         six coordinators under "Coordinators" and the six
+         children under "Children" (Anthony, 2026-11-26 late). */
+      function mealDutyParties(entry, kind){
+        if (kind === "prepare" && entry.preparePeople && entry.preparePeople.length) {
+          var coord = [], kids = [], rest = [];
+          entry.preparePeople.forEach(function(dn){
+            if (MEAL_COORDINATORS.indexOf(dn) > -1) { coord.push(dn); return; }
+            var isChild = false;
+            CAMP_DATA.people.forEach(function(pp){ if (pp.displayName === dn && pp.category === "Children") isChild = true; });
+            if (isChild) kids.push(dn); else rest.push(dn);
+          });
+          var parties = [];
+          if (coord.length) parties.push({ name:"Coordinators", people:coord });
+          if (kids.length) parties.push({ name:"Children", people:kids });
+          if (rest.length) parties.push({ name:entry.prepareLabel || "Prepare", people:rest });
+          return parties;
+        }
+        var groups = kind === "prepare" ? (entry.prepareGroups || []) : (entry.cleanupGroups || []);
+        return groups.map(function(g){ return { name:g, people:peopleForGroup(g) }; });
+      }
+      /* One duty section (Prepare / Clean up) of an expander:
+         the section label, then ONE CARD PER contributing
+         group/party — card header = the group name, card body =
+         that group's members, one per line in the smaller font.
+         A card renders even when only one group does the duty,
+         so membership is never a flat undifferentiated list
+         (Anthony, 2026-11-26 late). */
+      function mealDutyBlockHtml(label, parties, locTexts){
+        var pairs = (parties || []).map(function(p, i){
+          return { party: p, loc: locTexts ? locTexts[i] : null };
+        }).filter(function(x){ return x.party.people && x.party.people.length; });
+        if (!pairs.length) return "";
+        return '<div class="meal-duty"><p class="meal-duty-head"><span class="meal-duty-label">' + esc(label) + ':</span></p>'
+          + '<div class="meal-group-cards">'
+          + pairs.map(function(x){
+              return '<div class="meal-group-card"><h4 class="meal-group-head">' + esc(x.party.name) + "</h4>"
+                + (x.loc ? '<div class="meal-group-loc"><span class="loc-tag">' + esc(x.loc) + "</span></div>" : "")
+                + '<ul class="meal-people-rows">' + x.party.people.map(function(dn){ return "<li>" + esc(dn) + "</li>"; }).join("") + "</ul>"
+                + "</div>";
+            }).join("")
+          + "</div></div>";
       }
       /* The Prepare / Clean up blocks for one meal-duty entry —
          shared by the Schedule panels and the Assignments
-         "All meal duties" section so both always agree. The
-         Schedule expander passes rows=true: its members list one
-         per line in a smaller font; the All meal duties cards
-         keep the comma-joined line. The optional scope limits
+         "All meal duties" section so both always agree and both
+         use the per-group card format. The optional scope limits
          which blocks render: "prepare" = Prepare only,
          "cleanup" = Clean up only, anything else (incl. omitted)
          = both. Only the Schedule expander passes a scope; the
          All meal duties cards omit it and always show both. */
-      function mealEntryBlocksHtml(entry, rows, scope){
-        var prepHead, prepPeople;
-        if (entry.preparePeople && entry.preparePeople.length) {
-          prepHead = entry.prepareLabel || "";
-          prepPeople = entry.preparePeople.slice();
-        } else {
-          prepHead = (entry.prepareGroups || []).join(" + ");
-          prepPeople = peopleForGroups(entry.prepareGroups);
-        }
-        var cleanHead = (entry.cleanupGroups || []).join(" + ");
-        var cleanPeople = peopleForGroups(entry.cleanupGroups);
+      function mealEntryBlocksHtml(entry, rows, scope, withLoc){
         var out = "";
-        if (scope !== "cleanup") out += mealDutyBlockHtml("Prepare", prepHead, prepPeople, rows);
-        if (scope !== "prepare") out += mealDutyBlockHtml("Clean up", cleanHead, cleanPeople, rows);
+        if (scope !== "cleanup") {
+          var prepParties = mealDutyParties(entry, "prepare");
+          out += mealDutyBlockHtml("Prepare", prepParties, withLoc ? prepParties.map(function(p, i){ return mealLocTextForParty(entry, "prepare", p.name, i); }) : null);
+        }
+        if (scope !== "prepare") {
+          var cleanParties = mealDutyParties(entry, "cleanup");
+          out += mealDutyBlockHtml("Clean up", cleanParties, withLoc ? cleanParties.map(function(p, i){ return mealLocTextForParty(entry, "cleanup", p.name, i); }) : null);
+        }
         return out;
       }
       /* Schedule-expander scoping (Anthony, 2026-11-26): the
@@ -2389,7 +2607,7 @@
             : (st === "next" ? '<span class="meal-status is-next">Coming up</span>' : "");
           return '<article class="meal-duty-card"><h3>' + esc(entry.meal) + flag + "</h3>"
             + (when ? '<p class="meal-when">' + esc(when) + "</p>" : "")
-            + mealEntryBlocksHtml(entry)
+            + mealEntryBlocksHtml(entry, true, null, true)
             + "</article>";
         }).join("")
           + '<div class="actions"><button class="btn ghost" id="hideAllMealsBtn">Collapse</button></div>';
@@ -2632,13 +2850,16 @@
       }
       /* Amazing Race section (Race tab): the viewer's own
          race card on top, shown like the "Your group" card, then
-         the other race groups and the station masters behind a
-         Show / Collapse control — the Groups section pattern.
-         With no user picked there is no own card, so all seven
-         cards sit behind the button. */
+         the other race groups behind a Show / Collapse control —
+         the Groups section pattern. The show-all list holds ONLY
+         the six race groups: the Station masters card is not
+         listed there (Anthony, 2026-11-26 late) — a station
+         master still gets the Station masters card as their own
+         card on top. With no user picked there is no own card,
+         so all six group cards sit behind the button. */
       function raceSectionHtml(){
         var ar = CAMP_DATA.amazingRace || {};
-        var titles = (ar.groups || []).map(function(g){ return g.name; }).concat(["Station masters"]);
+        var titles = (ar.groups || []).map(function(g){ return g.name; });
         var mineTitle = state.user ? raceCardTitle(state.user) : null;
         var h = '<div class="resp-sec"><h2>Amazing Race</h2><p>' + (mineTitle ? "Your race group for Saturday at 2:00 PM." : "The race groups for Saturday at 2:00 PM.") + "</p></div>";
         if (mineTitle) {
@@ -2662,8 +2883,8 @@
       }
       /* ================= Rendering: Amazing Race ================= */
       /* The whole Amazing Race section lives on its own tab: the
-         signed-in user's own race card plus all six race groups
-         and the station masters list (raceSectionHtml, unchanged).
+         signed-in user's own race card plus the six race groups
+         in the show-all list (raceSectionHtml).
          While the race is running (Sat 2:00-4:00 PM) a "Happening
          now" line sits at the top, with a live countdown card to
          4:00 PM under it — the same treatment (and the same
@@ -2752,6 +2973,17 @@
         });
         return hit;
       }
+      /* Competition team work location (Anthony, 2026-11-26 late):
+         the team's unit (internal only) resolved through
+         rooms[].roomNumber — the card shows "Room <number>",
+         "room number tba" when the team's unit has no room number
+         yet, or "no unit" when the team has no unit, never the
+         unit itself. Only Unit 1 has a room number so far and no
+         team works there, so every assigned team reads
+         "room number tba" for now. */
+      function compTeamLocText(team){
+        return mealLocDisplay({ unit: team ? team.unit : null });
+      }
       function compTeamCardHtml(team, big, mine){
         var occ = team.members.map(function(dn){
           return dn === team.leader
@@ -2759,8 +2991,16 @@
             : "<li>" + esc(dn) + "</li>";
         }).join("");
         var title = team.dish ? team.dish : team.name;
+        /* Coordinators and Extras (the children) don't cook in a
+           unit, so their cards carry no location tag at all —
+           only the seven cooking teams get one (Anthony,
+           2026-11-26 late). */
+        var locHtml = (team.name === "Coordinators" || team.name === "Extras")
+          ? ""
+          : '<div class="comp-loc"><span class="loc-tag">' + esc(compTeamLocText(team)) + "</span></div>";
         return '<article class="room-card' + (big ? " big" : "") + '">'
           + '<div class="r-top"><h3>' + esc(title) + "</h3></div>"
+          + locHtml
           + '<ul class="occ-list">' + occ + "</ul>"
           + "</article>";
       }
@@ -4553,7 +4793,25 @@
           bindCompVoteInputs();
           return;
         }
-        var html = '<p class="resp-intro" style="margin-top:9.96px">' + esc(C.introText) + "</p>"
+        /* Personal cook-room note at the very top (Anthony,
+           2026-11-26 late): members of the seven cooking teams
+           are told where THEIR team cooks, above the intro line.
+           The team's unit resolves through rooms[].roomNumber:
+           number known -> "You will cook in room <number>.";
+           unit assigned but no number yet -> "You will cook in
+           room — room number tba." Coordinators and Extras (the
+           children) get no note. */
+        var cookNote = "";
+        if (state.user) {
+          var myTeam = competitionTeamFor(state.user);
+          if (myTeam && myTeam.name !== "Coordinators" && myTeam.name !== "Extras" && myTeam.unit) {
+            var myRoom = roomNumberForUnit(myTeam.unit);
+            cookNote = '<div class="note-card" style="margin-top:9.96px">You will cook in room <strong>'
+              + esc(myRoom ? myRoom : "— room number tba") + "</strong>.</div>";
+          }
+        }
+        var html = cookNote
+          + '<p class="resp-intro" style="margin-top:9.96px">' + esc(C.introText) + "</p>"
           + '<p class="star-note" style="margin-top:4.98px">Please find Anthony or Mandy if there\'s any questions.</p>';
         if (phase === "during") {
           html += '<div class="comp-timer-card"><p class="comp-timer-label">\u2605 Cooking competition is on \u2605</p>'
@@ -4582,7 +4840,12 @@
            Criteria sections sit directly below the user's own team;
            the other teams come below them. */
         html += compRulesHtml() + compCriteriaHtml();
-        var others = (C.teams || []).filter(function(t){ return t !== mine && t.name !== "Extras"; });
+        /* The Show other teams list holds only the seven cooking
+           teams: Extras (the children) never appear, and the
+           Coordinators card is not listed at all (Anthony,
+           2026-11-26 late) — coordinators see only their own
+           "You are a coordinator." line above. */
+        var others = (C.teams || []).filter(function(t){ return t !== mine && t.name !== "Extras" && t.name !== "Coordinators"; });
         if (others.length) {
           /* Other teams are collapsed by default on every visit —
              one toggle button expands the list, tapping again
@@ -4601,7 +4864,7 @@
 
       /* ================= Rendering: Rooms ================= */
       function roomCard(r, big){
-        var num = r.roomNumber ? "Room " + esc(r.roomNumber) : "Room # — added Friday";
+        var num = r.roomNumber ? "Room " + esc(r.roomNumber) : "room number tba";
         var leaderDisplay = displayName(r.leader, r.unit);
         var occ = r.occupants.map(function(o){
           var dn = displayName(o, r.unit);
@@ -4727,8 +4990,35 @@
         if (p.children != null) peopleRows += kv("Children", String(p.children));
         if (p.youths == null && p.children == null) peopleRows += kv("Youths & children", "approx " + p.youthsChildrenApproxFromSheet, "combined for now — split coming later");
         var roomNums = CAMP_DATA.rooms.map(function(r){
-          return kv(r.unit + " · " + r.type, r.roomNumber ? "Room " + r.roomNumber : "TBA Friday", r.roomNumber ? "" : "numbers arrive Friday");
+          return kv(r.unit + " · " + r.type, r.roomNumber ? "Room " + r.roomNumber : "room number tba");
         }).join("");
+        /* Meals (basic info): GENERIC rows only — Dinner, Lunch,
+           Parents breakfast, English breakfast (Anthony,
+           2026-11-26 late): no per-day entries in this section.
+           Each value still resolves its unit -> room number
+           through mealLocDisplay (a room number, "room number
+           tba" when a unit is assigned but has no room number
+           yet, or "no unit" when no unit is assigned), so the
+           rows fill themselves in as units / room numbers land.
+           Unit numbers are never shown here. Dinner is the same
+           both nights; the breakfasts share one location pair
+           across both days, so one representative entry each is
+           enough. */
+        function genericMealLoc(meal, label){
+          var locs = mealLocationsFor(meal);
+          if (!locs.length) return "no unit";
+          if (label) {
+            var pick = null;
+            locs.forEach(function(l){ if (l.label === label) pick = l; });
+            if (pick) return mealLocDisplay(pick);
+          }
+          return mealLocDisplay(locs[0]);
+        }
+        var mealLocRows =
+          kv("Dinner", genericMealLoc("Friday Dinner"))
+          + kv("Lunch", genericMealLoc("Saturday Lunch"))
+          + kv("Parents breakfast", genericMealLoc("Saturday Breakfast", "Parents"))
+          + kv("English breakfast", genericMealLoc("Saturday Breakfast", "English"));
         var cars = CAMP_DATA.cars.map(function(c){
           return '<li><span class="drv">' + esc(c.driver) + '</span><span class="car">' + esc(c.car || "Car TBA") + "</span></li>";
         }).join("");
@@ -4746,6 +5036,7 @@
           + kv("Units", G.unitsCount + " units")
           + kv("Drivers / cars listed", String(G.driversCarsListed))
           + "</div>"
+          + '<div class="info-card"><h2>Meals</h2>' + mealLocRows + "</div>"
           + '<div class="info-card"><h2>Room numbers</h2>' + roomNums + "</div>"
           + '<div class="info-card"><h2>Drivers &amp; cars (' + CAMP_DATA.cars.length + ")</h2><ul class=\"car-list\">" + cars + "</ul></div>"
           + "</div>";
