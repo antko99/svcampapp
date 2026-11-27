@@ -1869,17 +1869,22 @@
          display-only removal; no food-visibility logic remains. */
       /* Responsibilities removed — no duty chips anywhere. Only assignment bubbles remain. */
       function myChipHtml(e){ return ""; }
-      /* Schedule-event assignment attachments (Anthony, 2026-11-23):
-         a member of a meal's Prepare group sees their Prepare
-         assignment ON that meal's prep event (Fri dinner has two
-         prep blocks; Sat lunch / Sat dinner one each — Sat dinner's
-         prep block exists in both tracks). A member of a meal's
-         Clean up group sees their Clean up assignment ON the meal
-         event itself. Breakfasts have no prep slot, so the Prepare
-         group ALSO sees Prepare on the breakfast event. Only the
-         signed-in user's own group assignment ever shows; a user in
-         neither group sees nothing extra. This is separate from
-         coordination — nothing is merged.
+      /* Schedule-event assignment attachments (Anthony, 2026-11-23;
+         meal-event rule corrected 2026-11-26 late): a member of a
+         meal's Prepare group sees their Prepare assignment ON that
+         meal's prep event (Fri dinner has two prep blocks; Sat
+         lunch / Sat dinner one each — Sat dinner's prep block
+         exists in both tracks) AND on the meal event itself: the
+         ACTUAL MEAL event (kind "meal") always carries BOTH the
+         Prepare and the Clean up assignment — lunch and the
+         dinners included, not Clean up alone. Prep-specific
+         events (kind "prepare") carry Prepare only and
+         clean-up-specific events (kind "cleanup") carry Clean up
+         only. Breakfasts have no prep slot, so their meal event
+         is where both duties land. Only the signed-in user's own
+         group assignment ever shows; a user in neither group
+         sees nothing extra. This is separate from coordination —
+         nothing is merged.
          DINNER CLEAN UP (Anthony, 2026-11-26, restored late
          evening): dinner clean up shows at BOTH the dinner event
          and the evening clean-up block, like Prepare's two slots
@@ -1900,15 +1905,15 @@
       var EVENT_ASSIGN = {
         "fri-group":       { meal:"Friday Dinner",    kind:"prepare" },
         "fri-act":         { meal:"Friday Dinner",    kind:"prepare" },
-        "fri-dinner":      { meal:"Friday Dinner",    kind:"cleanup" },
+        "fri-dinner":      { meal:"Friday Dinner",    kind:"meal" },
         "fri-shower":      { meal:"Friday Dinner",    kind:"cleanup" },
         "sat-e-preplunch": { meal:"Saturday Lunch",   kind:"prepare" },
-        "sat-e-lunch":     { meal:"Saturday Lunch",   kind:"cleanup" },
+        "sat-e-lunch":     { meal:"Saturday Lunch",   kind:"meal" },
         "sat-p-couple":    { meal:"Saturday Lunch",   kind:"cleanup" },
         "sat-e-comp":      { meal:"Saturday Dinner",  kind:"prepare" },
         "sat-p-comp":      { meal:"Saturday Dinner",  kind:"prepare" },
-        "sat-e-dinner":    { meal:"Saturday Dinner",  kind:"cleanup" },
-        "sat-p-dinner":    { meal:"Saturday Dinner",  kind:"cleanup" },
+        "sat-e-dinner":    { meal:"Saturday Dinner",  kind:"meal" },
+        "sat-p-dinner":    { meal:"Saturday Dinner",  kind:"meal" },
         "sat-e-shower":    { meal:"Saturday Dinner",  kind:"cleanup" },
         "sat-e-breakfast": { meal:"Saturday Breakfast", kind:"meal" },
         "sat-p-breakfast": { meal:"Saturday Breakfast", kind:"meal" },
@@ -1947,13 +1952,34 @@
         }
         if (link.kind === "prepare") addPrepare();
         else if (link.kind === "cleanup") addCleanup();
-        else { /* breakfast meal event anchors both roles */
+        else { /* meal event anchors both roles */
           addPrepare();
           addCleanup();
         }
-        return roles.map(function(r){
+        var html = roles.map(function(r){
           return '<span class="chip">' + CHECK_SVG + "Your assignment: " + r + "</span>";
         }).join("");
+        /* Cooking Competition bubbles (Anthony, 2026-11-26 late):
+           on the Saturday 4:30 PM "Cooking Competition / Prep
+           Dinner" event (both tracks), a member of one of the
+           seven cooking teams ALSO gets two personal bubbles in
+           the same style: one naming their competition team and
+           one saying where that team cooks — the team's resolved
+           location via compTeamLocText (room number when known,
+           else "room number tba"; the unit itself never shows).
+           Coordinators and Extras (the children) have no cooking
+           team and get neither bubble. Schedule-only: the
+           Competition tab is unchanged, and the Saturday Dinner
+           Prepare bubble above (coordinators + children) is
+           unaffected. */
+        if (e.id === "sat-e-comp" || e.id === "sat-p-comp") {
+          var compTeam = competitionTeamFor(state.user);
+          if (compTeam && compTeam.name !== "Coordinators" && compTeam.name !== "Extras") {
+            html += '<span class="chip">' + CHECK_SVG + "Your assignment: Cooking Competition (" + esc(compTeam.name) + ")</span>";
+            html += '<span class="chip">' + CHECK_SVG + "You cook in: " + esc(compTeamLocText(compTeam)) + "</span>";
+          }
+        }
+        return html;
       }
       /* Coordination on prep events (Anthony, 2026-11-23): a meal
          coordinator's job includes the beforehand prep — finding the
@@ -2385,8 +2411,9 @@
          for that meal: the Prepare group name(s) AND the actual
          people in them, then Clean up the same way — scoped per
          event (see mealPanelScopeForEvent): Prepare slots show
-         Prepare only, clean-up blocks Clean up only, breakfasts
-         and the "Dinner & Cleanup" events show both. This is the
+         Prepare only, clean-up blocks Clean up only, and the
+         actual meal events (breakfasts, lunch, dinners) show
+         both. This is the
          coordinators' overview, so it shows the REAL responsible
          parties — the merged youth groups are single groups now,
          and a "Children" duty expands to the six children;
@@ -2505,26 +2532,22 @@
         }
         return out;
       }
-      /* Schedule-expander scoping (Anthony, 2026-11-26): the
-         panel shows only the crew(s) for the duty that belongs
-         to THAT event — Prepare slots show Prepare only, the
-         evening clean-up blocks show Clean up only, and the
-         breakfast events (kind "meal", both duties on the one
-         event) show both. The one exception is the
-         "Dinner & Cleanup" events (fri-dinner, sat-e-dinner,
-         sat-p-dinner): clean up runs during dinner there, so
-         they show BOTH crews even though EVENT_ASSIGN keys
-         them as kind "cleanup". Personal assignment bubbles
-         (EVENT_ASSIGN / myEventAssignHtml) are unaffected. */
-      var DINNER_BOTH_EVENTS = { "fri-dinner": true, "sat-e-dinner": true, "sat-p-dinner": true };
+      /* Schedule-expander scoping (Anthony, 2026-11-26; meal
+         events corrected 2026-11-26 late): the panel shows only
+         the crew(s) for the duty that belongs to THAT event —
+         Prepare slots (kind "prepare") show Prepare only,
+         clean-up-specific blocks (kind "cleanup") show Clean up
+         only, and the ACTUAL MEAL events (kind "meal": the
+         breakfasts, Sat lunch, and both "Dinner & Cleanup"
+         events) show BOTH crews. This mirrors the personal
+         assignment bubbles exactly (EVENT_ASSIGN /
+         myEventAssignHtml use the same kinds). */
       function mealPanelScopeForEvent(e){
         var link = EVENT_ASSIGN[e.id];
         if (!link) return "both";
         if (link.kind === "prepare") return "prepare";
         if (link.kind === "meal") return "both";
-        /* kind "cleanup": Dinner & Cleanup events show both,
-           every other clean-up event shows Clean up only. */
-        return DINNER_BOTH_EVENTS[e.id] ? "both" : "cleanup";
+        return "cleanup";
       }
       function mealPanelHtml(e){
         var entry = mealEntryForEvent(e);
