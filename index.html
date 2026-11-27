@@ -645,6 +645,28 @@
       .stand-toggle-hint{ font-weight:400; color:var(--accent-strong); font-size:0.7974rem; margin-top:2.69px; display:block;}
       .stand-detail{ padding:0 11.34px 8.07px; border-top:1px dashed var(--line);}
       .stand-counts{ font-weight:400; color:var(--ink-soft); font-size:0.8667rem; line-height:1.5; margin-top:5.38px;}
+      /* Amazing Race final results: the standings card above with
+         a gold Winner treatment on 1st place, the is-mine
+         highlight on the viewer's own group, and the score set
+         large at the head's right edge. */
+      .stand-card.is-winner{ border:2px solid var(--gold);}
+      .stand-card.is-mine{ border:2px solid var(--mine-line); background:var(--mine-bg);}
+      .stand-card.is-winner.is-mine{ border-color:var(--gold);}
+      .stand-rank.is-first{ background:var(--gold); border-color:var(--gold); color:var(--gold-ink);}
+      .stand-dish .tag{ margin-left:4.86px;}
+      .tag.mine{ background:var(--surface); color:var(--mine-ink); border:1.5px solid var(--mine-line);}
+      .race-score{ flex:none; font-weight:900; font-size:1.0228rem; line-height:1.1; color:var(--accent-strong); font-variant-numeric:tabular-nums; white-space:nowrap; text-align:right; margin-top:1.34px;}
+      .race-score small{ display:block; font-size:0.624rem; font-weight:400; letter-spacing:.06em; text-transform:uppercase; color:var(--muted);}
+      /* Segmented digital countdown (Avengers: Doomsday clock
+         style): a row of neat blocks on the warm timer card, each
+         a big bold number over a tiny unit label. Used by the
+         race countdown-to-start and the during-race time
+         remaining; the 1-second clock updates each block's
+         number in place. */
+      .cd-segs{ display:flex; justify-content:center; gap:5.38px 6.72px; margin-top:8.07px;}
+      .cd-seg{ flex:1 1 0; max-width:78px; background:rgba(255,248,240,.13); border:1px solid rgba(255,248,240,.38); border-radius:9.72px; padding:6.72px 2.02px 5.38px; text-align:center;}
+      .cd-num{ display:block; font-size:1.45rem; font-weight:900; line-height:1.05; color:#FFF8F0; font-variant-numeric:tabular-nums;}
+      .cd-lab{ display:block; font-size:0.6rem; font-weight:400; letter-spacing:.09em; text-transform:uppercase; color:#FFDCC4; margin-top:1.34px;}
       .pwd-error{ font-weight:400; color:var(--rose-strong); margin:5.38px 0 0; line-height:1.4;}
       .pwd-actions{ display:flex; gap:5.38px 6.48px; flex-wrap:wrap; margin-top:8.07px;}
       .pwd-actions .btn{ flex:1;}
@@ -1134,7 +1156,17 @@
             { name:"Group 5", members:["Tommy", "Kenneth", "Nanci", "Lukas Tsui", "Joelle Chan", "Praylee", "Rute"] },
             { name:"Group 6", members:["Osborn", "Nicole", "Jeffrey Tsui", "Charity Chan", "Pearl", "Justin Wong"] }
           ],
-          stationMasters: ["Calvin Ko", "Mandy Chung", "Timothy Ko", "Acacia"]
+          stationMasters: ["Calvin Ko", "Mandy Chung", "Timothy Ko", "Acacia"],
+          /* Final results — {group, score} in rank order, kept
+             apart from the rosters so the real rankings swap in
+             here without touching the finished view's layout.
+             Ships EMPTY (Anthony, 2026-11-27): the rankings are
+             released only on his word — he gives the scores in
+             chat, they land in this list, and the finished view
+             then renders the standings. While this list is empty
+             the finished view shows just "The Amazing Race is
+             finished!". */
+          results: []
         },
         generalInfo: {
           dates: { start: "2026-11-27", end: "2026-11-29" },
@@ -1692,11 +1724,18 @@
            their race group, a station master to the station masters —
            shown in the same Upcoming / Past lists, timed at the
            race event, labelled with the viewer's own race role
-           only. */
+           only. Reveal gate: before Saturday 1:00 PM the entry
+           still shows, but as a plain "Amazing Race" with no
+           group name and no group attached. */
         var raceLbl = raceAssignmentLabel(state.user);
         if (raceLbl) {
-          var tdRace = timedDuty("Amazing Race", "Amazing Race (" + raceLbl + ")", "sat-e-race");
-          if (tdRace) { tdRace.role = "Amazing Race"; tdRace.meal = "Amazing Race"; tdRace.group = raceLbl; out.push(tdRace); }
+          if (raceRevealed()) {
+            var tdRace = timedDuty("Amazing Race", "Amazing Race (" + raceLbl + ")", "sat-e-race");
+            if (tdRace) { tdRace.role = "Amazing Race"; tdRace.meal = "Amazing Race"; tdRace.group = raceLbl; out.push(tdRace); }
+          } else {
+            var tdRaceHidden = timedDuty("Amazing Race", "Amazing Race", "sat-e-race");
+            if (tdRaceHidden) { tdRaceHidden.role = "Amazing Race"; tdRaceHidden.meal = "Amazing Race"; out.push(tdRaceHidden); }
+          }
         }
         out.sort(function(a, b){ return a.key - b.key; });
         return out;
@@ -1926,8 +1965,11 @@
         if (!state.user || !e) return "";
         /* Amazing Race events (both Saturday tracks): a racer sees
            their own race group, a station master sees Station master —
-           same bubble style as the meal-duty bubbles. */
+           same bubble style as the meal-duty bubbles. Reveal gate:
+           no race bubble at all before Saturday 1:00 PM — the event
+           itself stays, just without the personal bubble. */
         if (e.id === "sat-e-race" || e.id === "sat-p-race") {
+          if (!raceRevealed()) return "";
           var raceLbl = raceAssignmentLabel(state.user);
           return raceLbl ? '<span class="chip">' + CHECK_SVG + "Your assignment: Amazing Race (" + raceLbl + ")</span>" : "";
         }
@@ -2920,17 +2962,88 @@
         var hr = document.getElementById("hideRaceBtn");
         if (hr) hr.addEventListener("click", function(){ state.raceOpen = false; renderRace(); });
       }
+      /* Amazing Race FINAL RESULTS — the finished view (Anthony,
+         2026-11-27): "The Amazing Race is finished!" over the
+         final standings, one ranking card per race group ordered
+         by rank. The standings read ONLY the separate
+         CAMP_DATA.amazingRace.results list ({group, score}) plus
+         the group rosters, so the real rankings swap in without
+         touching this layout. Cards reuse the competition
+         standings card: rank chip, group name, score at the
+         right, and a tap that expands to the group's members
+         (tap again to collapse). 1st place gets the gold Winner
+         treatment; the viewer's own group gets a "Your group"
+         tag and the is-mine highlight. */
+      var raceResultExpanded = {};
+      function raceResultsHtml(){
+        var ar = CAMP_DATA.amazingRace || {};
+        var results = (ar.results || []).slice().sort(function(a, b){ return b.score - a.score; });
+        var membersByGroup = {};
+        (ar.groups || []).forEach(function(g){ membersByGroup[g.name] = g.members || []; });
+        var mineTitle = state.user ? raceCardTitle(state.user) : null;
+        /* Rankings release (Anthony, 2026-11-27): while the
+           results list is empty, the finished view is ONLY the
+           "finished" line — no standings, no scores. The
+           standings sentence and cards appear once the results
+           list is filled in. */
+        var h = '<div class="resp-sec"><h2>Amazing Race</h2><p>The Amazing Race is finished!'
+          + (results.length ? " Final standings &mdash; tap a group to see its members." : "")
+          + "</p></div>";
+        var prevScore = null, prevRank = 0;
+        results.forEach(function(r, i){
+          var rank = (i > 0 && r.score === prevScore) ? prevRank : i + 1;
+          prevScore = r.score; prevRank = rank;
+          var isWinner = rank === 1;
+          var mine = mineTitle === r.group;
+          var open = !!raceResultExpanded[r.group];
+          var occ = (membersByGroup[r.group] || []).map(function(dn){ return "<li>" + esc(dn) + "</li>"; }).join("");
+          h += '<div class="stand-card' + (isWinner ? " is-winner" : "") + (mine ? " is-mine" : "") + '">'
+            + '<button type="button" class="stand-head" data-race-result-toggle="' + esc(r.group) + '" aria-expanded="' + (open ? "true" : "false") + '">'
+            + '<span class="stand-rank' + (isWinner ? " is-first" : "") + '" aria-hidden="true">' + rank + "</span>"
+            + '<span class="stand-main"><span class="stand-dish">' + esc(r.group)
+            + (isWinner ? '<span class="award-badge">Winner</span>' : "")
+            + (mine ? '<span class="tag mine">Your group</span>' : "")
+            + "</span>"
+            + '<span class="stand-toggle-hint">' + (open ? "Tap to collapse" : "Tap to see members") + "</span></span>"
+            + '<span class="race-score">' + r.score + "<small>points</small></span>"
+            + "</button>"
+            + (open ? '<div class="stand-detail"><p class="winner-members-h">Members</p><ul class="occ-list">' + occ + "</ul></div>" : "")
+            + "</div>";
+        });
+        return h;
+      }
+      function bindRaceResultButtons(){
+        document.querySelectorAll("[data-race-result-toggle]").forEach(function(b){
+          b.addEventListener("click", function(){
+            var k = b.getAttribute("data-race-result-toggle");
+            raceResultExpanded[k] = !raceResultExpanded[k];
+            renderRace();
+          });
+        });
+      }
       /* ================= Rendering: Amazing Race ================= */
       /* The whole Amazing Race section lives on its own tab: the
          signed-in user's own race card plus the six race groups
-         in the show-all list (raceSectionHtml).
-         While the race is running (Sat 2:00-4:00 PM) a "Happening
-         now" line sits at the top, with a live countdown card to
-         4:00 PM under it — the same treatment (and the same
-         .comp-timer-card styling) as the Competition countdown
-         in its 4:30-5:30 PM window. Outside the window there is
-         no countdown. The 1-second clock below keeps #raceTimer
-         ticking and re-renders this tab when the window flips. */
+         in the show-all list (raceSectionHtml). Phases (camp
+         time):
+         - Before Sat 1:00 PM: ONLY the countdown-to-start teaser
+           (raceCountdownToStartHtml) — no groupings, no personal
+           race card, no station master info (reveal gate).
+         - Sat 1:00–2:00 PM: the same live countdown to the start
+           stays at the top and the groupings appear below it.
+         - Sat 2:00–4:00 PM: "Happening now" plus the live
+           countdown card to 4:00 PM, groupings below — the same
+           treatment (and the same .comp-timer-card styling) as
+           the Competition countdown in its window.
+         - After 4:00 PM: the finished view (raceResultsHtml) —
+           "The Amazing Race is finished!" and nothing else
+           until the results list is filled in on Anthony's word
+           (see CAMP_DATA.amazingRace.results); no groupings, no
+           countdown.
+         The 1-second clock below keeps the segmented countdown
+         blocks ticking and re-renders this tab when a window
+         flips (the raceLive flip at 4:00 PM lands the finished
+         view on its own). */
       function renderRace(){
         var area = document.getElementById("raceArea");
         if (!area) return;
@@ -2939,12 +3052,22 @@
         if (raceLive()) {
           html += '<div class="race-live-line">Happening now</div>'
             + '<div class="comp-timer-card"><p class="comp-timer-label">\u2605 Amazing Race is on \u2605</p>'
-            + '<p class="comp-timer-value">Time remaining: <span id="raceTimer">' + fmtCountdown(raceRemainingSeconds()) + "</span></p>"
+            + '<p class="comp-timer-value">Time remaining</p>'
+            + cdSegsHtml("raceRem", raceRemainingSeconds(), false)
             + '<p class="comp-timer-sub">Ends 4:00 PM</p></div>';
+          html += raceSectionHtml();
+        } else if (!raceRevealed()) {
+          html += '<div class="resp-sec"><h2>Amazing Race</h2><p>The race groups are still a surprise — they&rsquo;ll be revealed Saturday at 1:00 PM, one hour before the race.</p></div>'
+            + raceCountdownToStartHtml();
+        } else if (campNow().key < RACE_START_KEY) {
+          html += raceCountdownToStartHtml();
+          html += raceSectionHtml();
+        } else {
+          html += raceResultsHtml();
         }
-        html += raceSectionHtml();
         area.innerHTML = html;
         bindRaceButtons();
+        bindRaceResultButtons();
       }
       function renderAssignments(){
         var area = document.getElementById("assignArea");
@@ -3085,9 +3208,91 @@
          4:00 PM Grouping starts. */
       var RACE_START_KEY = 1 * 1440 + 14 * 60;
       var RACE_END_KEY = 1 * 1440 + 16 * 60;
+      /* Reveal gate (Anthony, 2026-11-27): the race groupings —
+         the Race tab cards, the Saturday 2:00 PM schedule bubble
+         and the Assignments group label — stay hidden until one
+         hour before the race, Saturday 1:00 PM camp time. From
+         1:00 PM on they show exactly as before, and they stay
+         visible after the race ends. */
+      var RACE_REVEAL_KEY = 1 * 1440 + 13 * 60;
+      function raceRevealed(){
+        return campNow().key >= RACE_REVEAL_KEY;
+      }
       function raceLive(){
         var k = campNow().key;
         return k >= RACE_START_KEY && k < RACE_END_KEY;
+      }
+      /* Seconds until the race starts (Saturday 2:00 PM). Built
+         from campNow().daysUntil + mins rather than the key, so
+         the countdown is right even on days before camp, when
+         campNow().dayIdx is clamped to -1: days until Nov 28 is
+         daysUntil + 1, then the minutes from midnight to 2 PM. */
+      function raceStartsInSeconds(){
+        var now = campNow();
+        var minsLeft = (now.daysUntil + 1) * 1440 + 14 * 60 - now.mins;
+        if (minsLeft <= 0) return 0;
+        var total = minsLeft * 60 - new Date().getSeconds();
+        return total > 0 ? total : 0;
+      }
+      /* Friendly countdown text: "1 day, 3 hours, 41 minutes
+         and 5 seconds" — zero units drop out, and the seconds
+         keep the teaser visibly ticking on the 1-second clock. */
+      function fmtRaceCountdown(totalSec){
+        var units = [
+          [Math.floor(totalSec / 86400), "day"],
+          [Math.floor(totalSec % 86400 / 3600), "hour"],
+          [Math.floor(totalSec % 3600 / 60), "minute"],
+          [totalSec % 60, "second"]
+        ];
+        var parts = [];
+        units.forEach(function(u){
+          if (u[0] > 0) parts.push(u[0] + " " + u[1] + (u[0] === 1 ? "" : "s"));
+        });
+        if (!parts.length) return "0 seconds";
+        if (parts.length === 1) return parts[0];
+        return parts.slice(0, -1).join(", ") + " and " + parts[parts.length - 1];
+      }
+      /* Segmented digital countdown (Anthony, 2026-11-27 —
+         Avengers: Doomsday clock style): the lead-in sits on its
+         own line, then a row of blocks, DAYS / HOURS / MINUTES /
+         SECONDS, each a big bold number over a tiny label. Every
+         number carries an id (prefix + D/H/M/S) so the 1-second
+         clock can tick them in place via setCdSegs. */
+      function cdSegHtml(id, val, lab){
+        return '<span class="cd-seg"><span class="cd-num" id="' + id + '">' + val + '</span><span class="cd-lab">' + lab + "</span></span>";
+      }
+      function cdPad(n){ return (n < 10 ? "0" : "") + n; }
+      function cdSegsHtml(prefix, totalSec, withDays){
+        var d = Math.floor(totalSec / 86400);
+        var h = Math.floor(totalSec % 86400 / 3600);
+        var m = Math.floor(totalSec % 3600 / 60);
+        var s = totalSec % 60;
+        var out = '<div class="cd-segs">';
+        if (withDays) out += cdSegHtml(prefix + "D", d, "Days");
+        out += cdSegHtml(prefix + "H", cdPad(h), "Hours")
+          + cdSegHtml(prefix + "M", cdPad(m), "Minutes")
+          + cdSegHtml(prefix + "S", cdPad(s), "Seconds");
+        return out + "</div>";
+      }
+      function setCdSegs(prefix, totalSec, withDays){
+        function put(id, val){
+          var el = document.getElementById(id);
+          if (el) el.textContent = val;
+        }
+        if (withDays) put(prefix + "D", Math.floor(totalSec / 86400));
+        put(prefix + "H", cdPad(Math.floor(totalSec % 86400 / 3600)));
+        put(prefix + "M", cdPad(Math.floor(totalSec % 3600 / 60)));
+        put(prefix + "S", cdPad(totalSec % 60));
+      }
+      /* The countdown-to-start card: shown alone on the Race tab
+         before the 1:00 PM reveal, and kept at the top of the tab
+         (above the groupings) through the 1:00–2:00 PM hour. The
+         1-second clock keeps its segment blocks ticking. */
+      function raceCountdownToStartHtml(){
+        return '<div class="comp-timer-card"><p class="comp-timer-label">Get excited!</p>'
+          + '<p class="comp-timer-value">The Amazing Race will start in</p>'
+          + cdSegsHtml("raceCd", raceStartsInSeconds(), true)
+          + '<p class="comp-timer-sub">Saturday 2:00 PM</p></div>';
       }
       /* Seconds left in the race (to 4:00 PM) — the exact mirror
          of compRemainingSeconds() for the Competition countdown. */
@@ -5196,6 +5401,7 @@
          without a manual refresh. */
       var lastCompPhase = compPhase();
       var lastRaceLive = raceLive();
+      var lastRaceRevealed = raceRevealed();
       setInterval(function(){
         updateCompTab();
         updateRaceTab();
@@ -5216,14 +5422,26 @@
           lastRaceLive = rl;
           if (state.user && state.view === "race") renderRace();
         }
+        /* Reveal flip (Saturday 1:00 PM): the groupings land on
+           whichever view is open — Race tab, Assignments, or the
+           Schedule (whose race bubble appears) — with no manual
+           refresh. */
+        var rv = raceRevealed();
+        if (rv !== lastRaceRevealed) {
+          lastRaceRevealed = rv;
+          if (state.user && state.view === "race") renderRace();
+          else if (state.user && state.view === "assign") renderAssignments();
+          else if (state.user && state.view === "schedule") renderSchedule();
+        }
         if (ph === "during") {
           var tEl = document.getElementById("compTimer");
           if (tEl) tEl.textContent = fmtCountdown(compRemainingSeconds());
         }
-        if (rl) {
-          var rEl = document.getElementById("raceTimer");
-          if (rEl) rEl.textContent = fmtCountdown(raceRemainingSeconds());
-        }
+        if (rl) setCdSegs("raceRem", raceRemainingSeconds(), false);
+        /* Countdown-to-start ticking: its segment blocks are
+           present on the Race tab from before the reveal through
+           the 1:00–2:00 PM hour. */
+        setCdSegs("raceCd", raceStartsInSeconds(), true);
       }, 1000);
       /* Final results polling: in the after phase, while the
          Competition or Voting Tracker tab is the active tab and
