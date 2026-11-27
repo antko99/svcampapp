@@ -1140,7 +1140,7 @@
             { id:"fri-dinner",  t:18*60,    title:"Dinner & Cleanup", foodNote:"Pork shoulder 18 lbs (bought) · rice 18 cups · veggies 16 lbs · chicken wings", foodGroup:"Youth Sisters", duty:{ who:"Anthony", label:"Cook" } },
             { id:"fri-break",   t:19*60,    title:"Break" },
             { id:"fri-family",  t:19*60+15, title:"Family Time", duty:{ who:"Rute", label:"Leading this" } },
-            { id:"fri-shower",  t:20*60+30, title:"Shower Time / Self Arrangement / Board Games together" },
+            { id:"fri-shower",  t:20*60+30, title:"Clean up / Shower Time / Self Arrangement / Board Games" },
             { id:"fri-quiet",   t:22*60,    title:"Quiet Time" },
             { id:"fri-sleep",   t:22*60+30, title:"Sleep Time" }
           ],
@@ -1158,7 +1158,7 @@
             { id:"sat-e-dinner",   t:17*60+30, title:"Dinner & Cleanup", foodNote:"Ground beef 8 · rice 18 cups · veggies 16 lbs", foodFor:"Anthony", foodGroup:"Adults", track:"english" },
             { id:"sat-e-break",    t:18*60+45, title:"Break", track:"english" },
             { id:"sat-e-family",   t:19*60,    title:"Family Time", track:"english", duty:{ who:"Mandy Chung", label:"Leading this" } },
-            { id:"sat-e-shower",   t:20*60,    title:"Shower Time / Self Arrangement / Room Time / Board Games", track:"english" }
+            { id:"sat-e-shower",   t:20*60,    title:"Clean up / Shower Time / Self Arrangement / Room Time / Board Games", track:"english" }
           ],
           saturdayParents: [
             { id:"sat-p-personal", t:8*60+30,  title:"Personal Time", track:"shared" },
@@ -1251,14 +1251,17 @@
              (prepareJump); breakfast Prepare is implied beforehand, so
              it stays at the 9:00 AM breakfast itself; clean up is
              timed during the meal itself (cleanupJump = the meal).
-             Update (Anthony, 2026-11-26 evening, corrected later
-             that evening): Friday and Saturday DINNER clean up
-             happens during the meal, so on the Schedule those two
-             Clean up assignments show on the dinner event ONLY —
-             NOT on the evening slash block (the Shower Time /
-             Board Games block), which is shower / free time and
-             carries no clean-up assignment (see EVENT_ASSIGN).
-             Still one assignment entry each, timed at the meal. */
+             Update (Anthony, 2026-11-26 evening, restored
+             2026-11-26 late evening): Friday and Saturday DINNER
+             clean up is assigned at BOTH the dinner event and the
+             evening clean-up block, like Prepare's two slots. The
+             evening block labels carry "Clean up /" first, per
+             the sheet: Friday 8:30 PM "Clean up / Shower Time /
+             Self Arrangement / Board Games" and Saturday 8:00 PM
+             English track "Clean up / Shower Time / Self
+             Arrangement / Room Time / Board Games" (see
+             EVENT_ASSIGN: fri-shower / sat-e-shower). Still one
+             Assignments entry per meal, timed at the meal. */
           /* Duties keyed by the seven assignment groups
              (prepareGroups / cleanupGroups; table re-read from
              the sheet's Meal Duties tab 2026-11-26 eve). Where
@@ -1807,22 +1810,28 @@
          signed-in user's own group assignment ever shows; a user in
          neither group sees nothing extra. This is separate from
          coordination — nothing is merged.
-         DINNER CLEAN UP (Anthony, 2026-11-26, corrected later
-         that evening): the two dinners' clean up happens DURING
-         the meal, so the Clean up assignment attaches to the meal
-         event ONLY — NOT to the evening slash block (Friday's
-         8:30 PM "Shower Time / Self Arrangement / Board Games
-         together", Saturday's 8:00 PM English-track "Shower Time
-         / Self Arrangement / Room Time / Board Games"): those
-         blocks are shower / free time and carry no clean-up
-         bubble and no coordinator expander. The Assignments tab
-         keeps a single Clean up entry per meal, timed at the meal
-         (cleanupJump). Breakfast and lunch clean ups likewise stay
-         on the meal event only. */
+         DINNER CLEAN UP (Anthony, 2026-11-26, restored late
+         evening): dinner clean up shows at BOTH the dinner event
+         and the evening clean-up block, like Prepare's two slots
+         — Friday dinner clean up (Youth Bros) on fri-dinner +
+         fri-shower, Saturday dinner clean up (Youth Sis) on
+         sat-e-dinner + sat-e-shower. The evening block labels
+         carry "Clean up /" first per the sheet: Friday 8:30 PM
+         "Clean up / Shower Time / Self Arrangement / Board
+         Games", Saturday 8:00 PM English track "Clean up /
+         Shower Time / Self Arrangement / Room Time / Board
+         Games". Coordinators get the same ▾ expander with the
+         same crew on those blocks too (they key off
+         EVENT_ASSIGN). The Assignments tab keeps a single Clean
+         up entry per meal, timed at the meal (cleanupJump).
+         Breakfast and lunch clean ups stay on the meal event
+         only. The Parents-track Saturday 9:00 PM block has no
+         clean up in the sheet and stays unattached. */
       var EVENT_ASSIGN = {
         "fri-group":       { meal:"Friday Dinner",    kind:"prepare" },
         "fri-act":         { meal:"Friday Dinner",    kind:"prepare" },
         "fri-dinner":      { meal:"Friday Dinner",    kind:"cleanup" },
+        "fri-shower":      { meal:"Friday Dinner",    kind:"cleanup" },
         "sat-e-preplunch": { meal:"Saturday Lunch",   kind:"prepare" },
         "sat-e-lunch":     { meal:"Saturday Lunch",   kind:"cleanup" },
         "sat-p-couple":    { meal:"Saturday Lunch",   kind:"cleanup" },
@@ -1830,6 +1839,7 @@
         "sat-p-comp":      { meal:"Saturday Dinner",  kind:"prepare" },
         "sat-e-dinner":    { meal:"Saturday Dinner",  kind:"cleanup" },
         "sat-p-dinner":    { meal:"Saturday Dinner",  kind:"cleanup" },
+        "sat-e-shower":    { meal:"Saturday Dinner",  kind:"cleanup" },
         "sat-e-breakfast": { meal:"Saturday Breakfast", kind:"meal" },
         "sat-p-breakfast": { meal:"Saturday Breakfast", kind:"meal" },
         "sun-breakfast":   { meal:"Sunday Breakfast",   kind:"meal" }
@@ -2193,7 +2203,10 @@
          breakfast / lunch / dinner and Sunday breakfast) to expand
          a panel directly under the event naming who is responsible
          for that meal: the Prepare group name(s) AND the actual
-         people in them, then Clean up the same way. This is the
+         people in them, then Clean up the same way — scoped per
+         event (see mealPanelScopeForEvent): Prepare slots show
+         Prepare only, clean-up blocks Clean up only, breakfasts
+         and the "Dinner & Cleanup" events show both. This is the
          coordinators' overview, so it shows the REAL responsible
          parties — the merged youth groups are single groups now,
          and a "Children" duty expands to the six children;
@@ -2253,8 +2266,12 @@
          "All meal duties" section so both always agree. The
          Schedule expander passes rows=true: its members list one
          per line in a smaller font; the All meal duties cards
-         keep the comma-joined line. */
-      function mealEntryBlocksHtml(entry, rows){
+         keep the comma-joined line. The optional scope limits
+         which blocks render: "prepare" = Prepare only,
+         "cleanup" = Clean up only, anything else (incl. omitted)
+         = both. Only the Schedule expander passes a scope; the
+         All meal duties cards omit it and always show both. */
+      function mealEntryBlocksHtml(entry, rows, scope){
         var prepHead, prepPeople;
         if (entry.preparePeople && entry.preparePeople.length) {
           prepHead = entry.prepareLabel || "";
@@ -2265,14 +2282,37 @@
         }
         var cleanHead = (entry.cleanupGroups || []).join(" + ");
         var cleanPeople = peopleForGroups(entry.cleanupGroups);
-        return mealDutyBlockHtml("Prepare", prepHead, prepPeople, rows)
-          + mealDutyBlockHtml("Clean up", cleanHead, cleanPeople, rows);
+        var out = "";
+        if (scope !== "cleanup") out += mealDutyBlockHtml("Prepare", prepHead, prepPeople, rows);
+        if (scope !== "prepare") out += mealDutyBlockHtml("Clean up", cleanHead, cleanPeople, rows);
+        return out;
+      }
+      /* Schedule-expander scoping (Anthony, 2026-11-26): the
+         panel shows only the crew(s) for the duty that belongs
+         to THAT event — Prepare slots show Prepare only, the
+         evening clean-up blocks show Clean up only, and the
+         breakfast events (kind "meal", both duties on the one
+         event) show both. The one exception is the
+         "Dinner & Cleanup" events (fri-dinner, sat-e-dinner,
+         sat-p-dinner): clean up runs during dinner there, so
+         they show BOTH crews even though EVENT_ASSIGN keys
+         them as kind "cleanup". Personal assignment bubbles
+         (EVENT_ASSIGN / myEventAssignHtml) are unaffected. */
+      var DINNER_BOTH_EVENTS = { "fri-dinner": true, "sat-e-dinner": true, "sat-p-dinner": true };
+      function mealPanelScopeForEvent(e){
+        var link = EVENT_ASSIGN[e.id];
+        if (!link) return "both";
+        if (link.kind === "prepare") return "prepare";
+        if (link.kind === "meal") return "both";
+        /* kind "cleanup": Dinner & Cleanup events show both,
+           every other clean-up event shows Clean up only. */
+        return DINNER_BOTH_EVENTS[e.id] ? "both" : "cleanup";
       }
       function mealPanelHtml(e){
         var entry = mealEntryForEvent(e);
         if (!entry) return "";
         return '<div class="meal-panel" id="meal-panel-' + e.id + '" data-meal-panel="' + e.id + '"' + (state.mealOpen[e.id] ? "" : " hidden") + ">"
-          + mealEntryBlocksHtml(entry, true)
+          + mealEntryBlocksHtml(entry, true, mealPanelScopeForEvent(e))
           + "</div>";
       }
       /* Toggle one event's panel IN PLACE — no re-render, no
