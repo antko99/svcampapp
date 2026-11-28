@@ -1558,8 +1558,8 @@
            internally (unit: "Unit 1" style, matching rooms[].unit;
            null = not assigned yet). Units from the sheet
            (Accommodation & Carpool, rows 22-23): Dinner and Lunch
-           -> Unit 1, English Breakfast -> Unit 2, Parents
-           Breakfast -> none. Users NEVER see a unit number here:
+           -> Unit 1, English Breakfast -> Unit 7, Parents
+           Breakfast -> Unit 8. Users NEVER see a unit number here:
            the app resolves unit -> that unit's roomNumber and
            shows the room number, exactly "room number tba" when
            a unit is assigned but has no room number yet, or
@@ -1572,10 +1572,10 @@
            English only. */
         mealLocations: [
           { meal:"Friday Dinner", locations:[{ unit:"Unit 1" }] },
-          { meal:"Saturday Breakfast", locations:[{ label:"Parents", unit:null }, { label:"English", unit:"Unit 2" }] },
+          { meal:"Saturday Breakfast", locations:[{ label:"Parents", unit:"Unit 8" }, { label:"English", unit:"Unit 7" }] },
           { meal:"Saturday Lunch", locations:[{ label:"English", unit:"Unit 1" }] },
           { meal:"Saturday Dinner", locations:[{ unit:"Unit 1" }] },
-          { meal:"Sunday Breakfast", locations:[{ label:"Parents", unit:null }, { label:"English", unit:"Unit 2" }] }
+          { meal:"Sunday Breakfast", locations:[{ label:"Parents", unit:"Unit 8" }, { label:"English", unit:"Unit 7" }] }
         ],
         /* LOCATIONS (Anthony, 2026-11-27): the one unified places
            model — no longer just "meal units". From the sheet's
@@ -1601,11 +1601,11 @@
            from this table, in this order. */
         places: [
           { name:"English meeting", unit:"Unit 2", tags:["Breakbread", "Worship fellowship"], lang:"English" },
-          { name:"Parents meeting", unit:null, tags:["Breakbread", "Worship fellowship"], lang:"Parents" },
+          { name:"Parents meeting", unit:"Unit 3", tags:["Breakbread", "Worship fellowship"], lang:"Parents" },
           { name:"Dinner", unit:"Unit 1" },
           { name:"Lunch", unit:"Unit 1" },
-          { name:"English breakfast", unit:"Unit 2" },
-          { name:"Parents breakfast", unit:null }
+          { name:"English breakfast", unit:"Unit 7" },
+          { name:"Parents breakfast", unit:"Unit 8" }
         ],
         cars: [
           { driver:"Calvin", car:"Red Tesla Model Y" },
@@ -5601,11 +5601,11 @@
          location text through placeLocDisplay, and when the
          place's unit has a room number that resolves to a
          building the row is tappable and highlights that
-         building, exactly like a unit card. Places whose unit
-         has no room number yet (today: both meetings — Unit 2
-         is unnumbered, Parents meeting has no unit) are plain
-         info rows, never fake-placed. Meeting places show
-         with "room" added (placeDisplayName). */
+         building, exactly like a unit card. Every place now
+         has a unit with a room number, so every row is
+         tappable; a place whose unit had no room number would
+         stay a plain info row, never fake-placed. Meeting
+         places show with "room" added (placeDisplayName). */
       function mapMealRows(){
         return (CAMP_DATA.places || []).map(function(pl){
           return { name: placeDisplayName(pl), loc: { unit: pl.unit } };
